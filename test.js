@@ -31,7 +31,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: 'mongodb+srv://adshark00:0KKX2YSBGY9Zrz21@cluster0.g7lpz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+    mongoUrl: 'mongodb+srv://adshark00:0KKX2YSBGY9Zrz21@cluster0.g7lpz.mongodb.net/adsvertiser?retryWrites=true&w=majority&appName=Cluster0',
     ttl: 24 * 60 * 60 // Session TTL (1 day)
   }),
   cookie: {
@@ -40,7 +40,7 @@ app.use(session({
 }));
 
 // MongoDB connection
-mongoose.connect('mongodb+srv://adshark00:0KKX2YSBGY9Zrz21@cluster0.g7lpz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect('mongodb+srv://adshark00:0KKX2YSBGY9Zrz21@cluster0.g7lpz.mongodb.net/adsvertiser?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
