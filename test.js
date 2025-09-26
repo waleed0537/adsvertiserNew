@@ -14,7 +14,10 @@ const PORT = 3000;
 const router = express.Router();
 
 app.use(cors({
-  origin: 'https://www.adshark.net',
+   origin: [
+    'https://www.adshark.net',
+    'https://adsvertisernew-1.onrender.com'
+  ],
   credentials: true
 }));
 
