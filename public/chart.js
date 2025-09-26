@@ -27,6 +27,7 @@ function updateChart(data) {
             labels: labels,
             datasets: [
                 {
+                    
                     label: 'Impressions',
                     data: impressions,
                     borderColor: 'rgb(75, 192, 192)',
