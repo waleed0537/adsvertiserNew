@@ -1,6 +1,6 @@
 const API_ENDPOINTS = {
     local: 'http://localhost:3000',
-    production: 'https://www.adshark.net'
+    production: 'https://adsvertisernew-1.onrender.com',
 };
 
 const BASE_URL = window.location.hostname === 'localhost' ? API_ENDPOINTS.local : API_ENDPOINTS.production;

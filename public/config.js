@@ -3,7 +3,7 @@ const API_CONFIG = {
     getBaseUrl: () => {
         return window.location.hostname === 'localhost' 
             ? 'http://localhost:3000'
-            : 'https://www.adshark.net';
+            : 'https://adsvertisernew-1.onrender.com';
     },
     
     // Get auth token from localStorage or cookie

@@ -1,6 +1,6 @@
 const BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000'
-    : 'https://www.adshark.net';
+    : 'https://adsvertisernew-1.onrender.com';
 
 document.addEventListener('DOMContentLoaded', function() {
     const logoutButton = document.getElementById('logoutButton');
