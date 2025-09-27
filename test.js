@@ -47,17 +47,20 @@ app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  rolling: true, // Add this to refresh session on each request
   store: MongoStore.create({
     mongoUrl: MONGODB_URI,
-    ttl: 24 * 60 * 60,
-    touchAfter: 24 * 3600
+    ttl: 24 * 60 * 60, // 24 hours in seconds
+    touchAfter: 24 * 3600,
+    autoRemove: 'native'
   }),
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24, // 1 day
-    secure: process.env.NODE_ENV === 'production',
+    maxAge: 1000 * 60 * 60 * 24, // 24 hours in milliseconds
+    secure: false, // Set to false for development, true only for HTTPS in production
     httpOnly: true,
-    sameSite: 'lax'
-  }
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // Updated for better compatibility
+  },
+  name: 'sessionId' // Give the session a specific name
 }));
 
 // MongoDB connection
@@ -84,21 +87,32 @@ mongoose.connection.on('disconnected', () => {
 
 // Authentication middleware
 const isAuthenticated = (req, res, next) => {
-  console.log('Session check:', {
-    sessionExists: !!req.session,
-    userId: req.session?.userId,
-    sessionID: req.sessionID
-  });
+  console.log('=== Session Check Debug ===');
+  console.log('Session ID:', req.sessionID);
+  console.log('Session exists:', !!req.session);
+  console.log('User ID in session:', req.session?.userId);
+  console.log('Session data:', JSON.stringify(req.session, null, 2));
+  console.log('Session cookie:', req.headers.cookie);
+  console.log('========================');
   
   if (req.session && req.session.userId) {
+    // Touch the session to keep it alive
+    req.session.touch();
     next();
   } else {
-    console.log('Authentication failed - no valid session');
-    res.status(401).json({ 
-      success: false,
-      message: 'Authentication required. Please log in.',
-      redirect: '/login'
-    });
+    console.log('Authentication failed - redirecting to login');
+    
+    // For AJAX requests, return JSON
+    if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Session expired. Please log in again.',
+        redirect: '/login'
+      });
+    }
+    
+    // For regular requests, redirect
+    res.redirect('/login');
   }
 };
 
@@ -716,16 +730,42 @@ app.post('/login', async (req, res) => {
       });
     }
 
-    req.session.userId = user._id;
-    req.session.username = user.username;
-    
-    console.log('Login successful for user:', user.email);
-    console.log('Session created with userId:', req.session.userId);
+    // Regenerate session for security
+    req.session.regenerate((err) => {
+      if (err) {
+        console.error('Session regeneration error:', err);
+        return res.status(500).json({
+          success: false,
+          message: 'Login failed. Please try again.'
+        });
+      }
 
-    return res.status(200).json({ 
-      success: true, 
-      message: 'Login successful',
-      redirectUrl: '/dashboard.html' 
+      // Set session data
+      req.session.userId = user._id;
+      req.session.username = user.username;
+      req.session.email = user.email;
+      
+      // Save the session explicitly
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({
+            success: false,
+            message: 'Login failed. Please try again.'
+          });
+        }
+
+        console.log('Login successful for user:', user.email);
+        console.log('Session created with ID:', req.sessionID);
+        console.log('Session data:', { userId: req.session.userId, username: req.session.username });
+
+        return res.status(200).json({ 
+          success: true, 
+          message: 'Login successful',
+          redirectUrl: '/dashboard.html',
+          sessionId: req.sessionID // Optional: for debugging
+        });
+      });
     });
 
   } catch (error) {
@@ -776,20 +816,44 @@ app.get('/verify-email', async (req, res) => {
 
 // Logout endpoint
 app.get('/logout', (req, res) => {
+  console.log('Logout requested for session:', req.sessionID);
+  
   req.session.destroy((err) => {
     if (err) {
       console.error('Error destroying session:', err);
-      res.status(500).json({ 
+      return res.status(500).json({ 
         success: false,
         message: 'Error logging out' 
       });
-    } else {
-      res.clearCookie('connect.sid');
-      res.redirect('/login');
     }
+    
+    // Clear the session cookie
+    res.clearCookie('sessionId', {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production'
+    });
+    
+    console.log('Session destroyed successfully');
+    
+    // For AJAX requests
+    if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+      return res.json({ success: true, redirect: '/login' });
+    }
+    
+    // For regular requests
+    res.redirect('/login');
   });
 });
-
+app.get('/session-status', (req, res) => {
+  res.json({
+    sessionId: req.sessionID,
+    userId: req.session?.userId,
+    username: req.session?.username,
+    isAuthenticated: !!(req.session && req.session.userId),
+    sessionData: req.session
+  });
+});
 // Performance report endpoints
 app.get('/performance-report', isAuthenticated, fetchUserApiToken, async (req, res) => {
   const { format = 'json', startDate, endDate, groupBy = 'date', ...additionalParams } = req.query;
@@ -1203,11 +1267,21 @@ Thank you for your payment!`,
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({
-    success: false,
-    message: 'Internal server error'
-  });
+  if (err && err.code === 'EBADCSRFTOKEN') {
+    res.status(403).json({
+      success: false,
+      message: 'Session expired. Please refresh and try again.'
+    });
+  } else if (err && err.message && err.message.includes('session')) {
+    console.error('Session error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Session error. Please log in again.',
+      redirect: '/login'
+    });
+  } else {
+    next(err);
+  }
 });
 
 // Start the server
