@@ -18,8 +18,10 @@ const router = express.Router();
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://adshark00:0KKX2YSBGY9Zrz21@cluster0.g7lpz.mongodb.net/adsvertiser?retryWrites=true&w=majority&appName=Cluster0';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'your-secret-key';
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
-const BASE_DOMAIN = process.env.BASE_DOMAIN || (process.env.NODE_ENV === 'production' ? 'https://adsvertisernew-1.onrender.com' : 'http://localhost:3000');
-
+const isProduction = process.env.NODE_ENV === 'production';
+const BASE_DOMAIN = isProduction 
+  ? 'https://adsvertisernew-1.onrender.com' 
+  : 'http://localhost:3000';
 // CORS configuration
 app.use(cors({
   origin: function (origin, callback) {
@@ -29,15 +31,27 @@ app.use(cors({
       'http://127.0.0.1:3000'
     ];
     
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(null, true); // Allow for development
+      // In production, be strict about origins
+      if (isProduction) {
+        callback(new Error('Not allowed by CORS'));
+      } else {
+        callback(null, true); // Allow in development
+      }
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
-
+if (isProduction) {
+  app.set('trust proxy', 1);
+}
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -47,20 +61,26 @@ app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  rolling: true, // Add this to refresh session on each request
+  rolling: true,
   store: MongoStore.create({
     mongoUrl: MONGODB_URI,
-    ttl: 24 * 60 * 60, // 24 hours in seconds
+    ttl: 24 * 60 * 60, // 24 hours
     touchAfter: 24 * 3600,
-    autoRemove: 'native'
+    autoRemove: 'native',
+    // Add these for better production handling
+    stringify: false,
+    crypto: {
+      secret: SESSION_SECRET
+    }
   }),
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24, // 24 hours in milliseconds
-    secure: false, // Set to false for development, true only for HTTPS in production
+    maxAge: 1000 * 60 * 60 * 24, // 24 hours
+    secure: isProduction, // Only use secure cookies in production
     httpOnly: true,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // Updated for better compatibility
+    sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-origin in production
+    domain: isProduction ? '.onrender.com' : undefined // Set domain for production
   },
-  name: 'sessionId' // Give the session a specific name
+  name: 'connect.sid' // Use default session name
 }));
 
 // MongoDB connection
@@ -87,32 +107,39 @@ mongoose.connection.on('disconnected', () => {
 
 // Authentication middleware
 const isAuthenticated = (req, res, next) => {
-  console.log('=== Session Check Debug ===');
+  console.log('=== Authentication Check ===');
+  console.log('Environment:', isProduction ? 'Production' : 'Development');
   console.log('Session ID:', req.sessionID);
   console.log('Session exists:', !!req.session);
   console.log('User ID in session:', req.session?.userId);
-  console.log('Session data:', JSON.stringify(req.session, null, 2));
-  console.log('Session cookie:', req.headers.cookie);
-  console.log('========================');
+  console.log('Headers:', req.headers);
+  console.log('Cookies:', req.get('Cookie'));
+  console.log('============================');
   
   if (req.session && req.session.userId) {
-    // Touch the session to keep it alive
     req.session.touch();
+    console.log('✅ Authentication successful');
     next();
   } else {
-    console.log('Authentication failed - redirecting to login');
+    console.log('❌ Authentication failed - no valid session');
     
-    // For AJAX requests, return JSON
-    if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
-      return res.status(401).json({ 
-        success: false,
-        message: 'Session expired. Please log in again.',
-        redirect: '/login'
+    // Clear any invalid session
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) console.error('Error destroying invalid session:', err);
       });
     }
     
-    // For regular requests, redirect
-    res.redirect('/login');
+    return res.status(401).json({ 
+      success: false,
+      message: 'Authentication required. Please log in.',
+      redirect: '/login',
+      debug: {
+        sessionExists: !!req.session,
+        sessionId: req.sessionID,
+        userId: req.session?.userId
+      }
+    });
   }
 };
 
@@ -654,8 +681,12 @@ app.post('/check-user', async (req, res) => {
 app.post('/signup', async (req, res) => {
   const { username, email, password, password2 } = req.body;
 
+  console.log('Signup attempt:', { username, email, hasPassword: !!password });
+
   try {
+    // Validation
     if (!username || !email || !password || !password2) {
+      console.log('Missing fields in signup');
       return res.status(400).json({ 
         success: false,
         message: 'All fields are required' 
@@ -663,27 +694,58 @@ app.post('/signup', async (req, res) => {
     }
 
     if (password !== password2) {
+      console.log('Password mismatch');
       return res.status(400).json({ 
         success: false,
         message: 'Passwords do not match' 
       });
     }
 
+    if (password.length < 6) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Password must be at least 6 characters long' 
+      });
+    }
+
+    // Check for existing user
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
+      console.log('User already exists:', email);
       return res.status(400).json({ 
         success: false,
         message: 'User with this email already exists' 
       });
     }
 
+    // Check for existing username
+    const existingUsername = await User.findOne({ username: username.trim() });
+    if (existingUsername) {
+      console.log('Username already exists:', username);
+      return res.status(400).json({ 
+        success: false,
+        message: 'Username is already taken' 
+      });
+    }
+
+    // Create new user
+    console.log('Creating new user...');
     const newUser = await addUser({ 
       username: username.trim(), 
       email: email.trim(), 
       password 
     });
 
-    await sendVerificationEmail(email, username);
+    console.log('User created successfully:', newUser.email);
+
+    // Send verification email
+    try {
+      await sendVerificationEmail(email, username);
+      console.log('Verification email sent');
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      // Don't fail signup if email fails
+    }
 
     res.status(201).json({
       success: true,
@@ -693,9 +755,20 @@ app.post('/signup', async (req, res) => {
 
   } catch (error) {
     console.error('Signup error:', error);
+    
+    // Handle duplicate key errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyValue)[0];
+      return res.status(400).json({ 
+        success: false,
+        message: `${field === 'email' ? 'Email' : 'Username'} is already taken` 
+      });
+    }
+
     res.status(500).json({ 
       success: false,
-      message: 'Registration failed. Please try again.' 
+      message: 'Registration failed. Please try again.',
+      error: isProduction ? undefined : error.message
     });
   }
 });
@@ -704,11 +777,20 @@ app.post('/signup', async (req, res) => {
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
+  console.log('Login attempt for email:', email);
+  console.log('Environment:', isProduction ? 'Production' : 'Development');
+
   try {
-    console.log('Login attempt for email:', email);
+    if (!email || !password) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Email and password are required' 
+      });
+    }
 
     const user = await findUserByEmail(email);
     if (!user) {
+      console.log('User not found:', email);
       return res.status(400).json({ 
         success: false,
         message: 'Invalid email or password' 
@@ -717,6 +799,7 @@ app.post('/login', async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
+      console.log('Invalid password for user:', email);
       return res.status(400).json({ 
         success: false,
         message: 'Invalid email or password' 
@@ -724,13 +807,15 @@ app.post('/login', async (req, res) => {
     }
 
     if (!user.verified) {
+      console.log('User not verified:', email);
       return res.status(401).json({ 
         success: false, 
-        error: 'Please verify your email before logging in' 
+        message: 'Please verify your email before logging in',
+        needsVerification: true
       });
     }
 
-    // Regenerate session for security
+    // Destroy any existing session first
     req.session.regenerate((err) => {
       if (err) {
         console.error('Session regeneration error:', err);
@@ -744,26 +829,33 @@ app.post('/login', async (req, res) => {
       req.session.userId = user._id;
       req.session.username = user.username;
       req.session.email = user.email;
+      req.session.loginTime = new Date();
       
-      // Save the session explicitly
-      req.session.save((err) => {
-        if (err) {
-          console.error('Session save error:', err);
+      // Explicitly save the session
+      req.session.save((saveErr) => {
+        if (saveErr) {
+          console.error('Session save error:', saveErr);
           return res.status(500).json({
             success: false,
             message: 'Login failed. Please try again.'
           });
         }
 
-        console.log('Login successful for user:', user.email);
-        console.log('Session created with ID:', req.sessionID);
-        console.log('Session data:', { userId: req.session.userId, username: req.session.username });
+        console.log('✅ Login successful for user:', user.email);
+        console.log('Session ID:', req.sessionID);
+        console.log('Session data saved:', {
+          userId: req.session.userId,
+          username: req.session.username
+        });
 
         return res.status(200).json({ 
           success: true, 
           message: 'Login successful',
           redirectUrl: '/dashboard.html',
-          sessionId: req.sessionID // Optional: for debugging
+          user: {
+            username: user.username,
+            email: user.email
+          }
         });
       });
     });
@@ -772,11 +864,63 @@ app.post('/login', async (req, res) => {
     console.error('Login error:', error);
     res.status(500).json({ 
       success: false,
-      message: 'Login failed. Please try again.' 
+      message: 'Login failed. Please try again.',
+      error: isProduction ? undefined : error.message
     });
   }
 });
+app.get('/session-debug', (req, res) => {
+  res.json({
+    environment: isProduction ? 'Production' : 'Development',
+    sessionId: req.sessionID,
+    session: req.session,
+    cookies: req.cookies,
+    headers: {
+      cookie: req.get('Cookie'),
+      userAgent: req.get('User-Agent'),
+      host: req.get('Host'),
+      origin: req.get('Origin')
+    },
+    isAuthenticated: !!(req.session && req.session.userId)
+  });
+});
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    environment: isProduction ? 'Production' : 'Development',
+    timestamp: new Date().toISOString(),
+    mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
+  });
+});
+
+// Enhanced error handling
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  
+  // Handle specific errors
+  if (err.code === 'EBADCSRFTOKEN') {
+    return res.status(403).json({
+      success: false,
+      message: 'Invalid CSRF token'
+    });
+  }
+
+  if (err.message && err.message.includes('session')) {
+    return res.status(401).json({
+      success: false,
+      message: 'Session error. Please log in again.',
+      redirect: '/login'
+    });
+  }
+
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error',
+    error: isProduction ? undefined : err.message
+  });
+});
 // Email verification endpoint
 app.get('/verify-email', async (req, res) => {
   const { token } = req.query;
