@@ -1,125 +1,298 @@
-const sign_in_btn = document.querySelector("#sign-in-btn");
-const sign_up_btn = document.querySelector("#sign-up-btn");
-const container = document.querySelector(".container");
+// Login and Signup functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const sign_in_btn = document.querySelector("#sign-in-btn");
+    const sign_up_btn = document.querySelector("#sign-up-btn");
+    const container = document.querySelector(".container");
 
-sign_up_btn.addEventListener("click", () => {
-    container.classList.add("sign-up-mode");
-    document.getElementById("login-error").style.display = "none";
-});
-
-sign_in_btn.addEventListener("click", () => {
-    container.classList.remove("sign-up-mode");
-    document.getElementById("signup-error").style.display = "none";
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const mode = urlParams.get("mode");
-
-    if (mode === "signup") {
-        container.classList.add("sign-up-mode");
-        document.getElementById("login-error").style.display = "none";
-    } else {
-        container.classList.remove("sign-up-mode");
-        document.getElementById("signup-error").style.display = "none";
+    // Panel switching functionality
+    if (sign_up_btn) {
+        sign_up_btn.addEventListener("click", () => {
+            container.classList.add("sign-up-mode");
+        });
     }
-});
 
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('.sign-up-form').addEventListener('submit', async (event) => {
-        event.preventDefault(); 
+    if (sign_in_btn) {
+        sign_in_btn.addEventListener("click", () => {
+            container.classList.remove("sign-up-mode");
+        });
+    }
 
-        const usernameInput = document.querySelector('.sign-up-form input[name="username"]');
-        const emailInput = document.querySelector('.sign-up-form input[name="email"]');
-        const passwordInput = document.querySelector('.sign-up-form input[name="password"]');
-        const rePasswordInput = document.querySelector('.sign-up-form input[name="password2"]');
+    // Determine base URL
+    const getBaseUrl = () => {
+        return window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000'
+            : 'https://adsvertisernew-1.onrender.com';
+    };
 
-        if (!usernameInput || !emailInput || !passwordInput || !rePasswordInput) {
-            console.error('One or more form inputs are missing in the DOM.');
-            return;
+    // Enhanced error display function
+    function showError(elementId, message) {
+        const errorElement = document.getElementById(elementId);
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 5000);
         }
+        console.error('Error:', message);
+    }
 
-        const username = usernameInput.value;
-        const email = emailInput.value;
-        const password = passwordInput.value;
-        const rePassword = rePasswordInput.value;
-
-        if (password !== rePassword) {
-            document.getElementById('signup-error').textContent = 'Passwords do not match';
-            document.getElementById('signup-error').style.display = 'block';
-            return;
+    function showSuccess(message) {
+        if (window.Toast) {
+            Toast.show(message, 'success');
+        } else {
+            alert(message);
         }
+    }
 
-        try {
-            const response = await fetch('/check-user', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, email }),
-            });
+    // Login form handler
+    const loginForm = document.querySelector('.sign-in-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = loginForm.querySelector('input[name="email"]')?.value?.trim();
+            const password = loginForm.querySelector('input[name="password"]')?.value;
+            const submitButton = loginForm.querySelector('input[type="submit"]');
 
-            if (!response.ok) {
-                const data = await response.json();
-                document.getElementById('signup-error').textContent = data.error;
-                document.getElementById('signup-error').style.display = 'block';
+            // Clear previous errors
+            const errorElement = document.getElementById('login-error');
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+
+            // Basic validation
+            if (!email || !password) {
+                showError('login-error', 'Please fill in all fields');
                 return;
             }
 
-            document.querySelector('.sign-up-form').submit();
-        } catch (error) {
-            console.error('Error checking user:', error);
-            document.getElementById('signup-error').textContent = 'An error occurred. Please try again.';
-            document.getElementById('signup-error').style.display = 'block';
-        }
-    });
-});
-
-
-document.querySelector('.sign-in-form').addEventListener('submit', async (event) => {
-    event.preventDefault(); // Prevent the form from submitting
-
-    const email = document.querySelector('.sign-in-form input[name="email"]').value;
-    const password = document.querySelector('.sign-in-form input[name="password"]').value;
-
-    // Clear previous error messages
-    const errorElement = document.getElementById('login-error');
-    errorElement.textContent = '';
-    errorElement.style.display = 'none';
-
-    try {
-        const response = await fetch('/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            // Login successful
-            Toast.show("Sign-in successful!");
-            setTimeout(() => {
-                window.location.href = data.redirectUrl; // Redirect to dashboard
-            }, 2000);
-        } else {
-            // Login failed
-            if (data.message === 'User not found') {
-                errorElement.textContent = 'User not found. Please check your email.';
-            } else if (data.message === 'Invalid credentials') {
-                errorElement.textContent = 'Invalid password. Please try again.';
-            } else if (data.error === 'Please verify your email before logging in') {
-                errorElement.textContent = 'Please verify your email before logging in.';
-            } else {
-                errorElement.textContent = 'An unexpected error occurred. Please try again.';
+            // Email format validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('login-error', 'Please enter a valid email address');
+                return;
             }
-            errorElement.style.display = 'block'; // Show the error message
-        }
-    } catch (error) {
-        console.error('Error during login:', error);
-        errorElement.textContent = 'An error occurred. Please try again later.';
-        errorElement.style.display = 'block'; // Show the error message
+
+            // Show loading state
+            const originalValue = submitButton ? submitButton.value : '';
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.value = 'Logging in...';
+            }
+
+            try {
+                console.log('Attempting login for:', email);
+                
+                const response = await fetch(`${getBaseUrl()}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include', // Important for session cookies
+                    body: JSON.stringify({ email, password })
+                });
+
+                console.log('Login response status:', response.status);
+
+                let data;
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    console.error('Failed to parse response as JSON');
+                    throw new Error('Server returned invalid response');
+                }
+
+                console.log('Login response data:', data);
+
+                if (response.ok && data.success) {
+                    showSuccess('Login successful! Redirecting...');
+                    // Redirect after a short delay
+                    setTimeout(() => {
+                        window.location.href = data.redirectUrl || '/dashboard.html';
+                    }, 1000);
+                } else {
+                    // Show error message from server
+                    const errorMessage = data.message || data.error || 'Login failed';
+                    showError('login-error', errorMessage);
+                }
+
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('login-error', 'Network error. Please try again.');
+            } finally {
+                // Reset button
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.value = originalValue;
+                }
+            }
+        });
     }
+
+    // Signup form handler with real-time validation
+    const signupForm = document.querySelector('.sign-up-form');
+    if (signupForm) {
+        // Real-time validation for email and username
+        const emailInput = signupForm.querySelector('input[name="email"]');
+        const usernameInput = signupForm.querySelector('input[name="username"]');
+        
+        let validationTimeout;
+
+        const checkUserAvailability = async (email, username) => {
+            try {
+                const response = await fetch(`${getBaseUrl()}/check-user`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, username })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    showError('signup-error', data.error || 'User check failed');
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('User check error:', error);
+                return false;
+            }
+        };
+
+        // Debounced validation
+        const debouncedCheck = (email, username) => {
+            clearTimeout(validationTimeout);
+            validationTimeout = setTimeout(() => {
+                if (email && username) {
+                    checkUserAvailability(email, username);
+                }
+            }, 500);
+        };
+
+        if (emailInput && usernameInput) {
+            emailInput.addEventListener('blur', () => {
+                const email = emailInput.value.trim();
+                const username = usernameInput.value.trim();
+                if (email && username) {
+                    debouncedCheck(email, username);
+                }
+            });
+
+            usernameInput.addEventListener('blur', () => {
+                const email = emailInput.value.trim();
+                const username = usernameInput.value.trim();
+                if (email && username) {
+                    debouncedCheck(email, username);
+                }
+            });
+        }
+
+        // Signup form submission
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = signupForm.querySelector('input[name="username"]')?.value?.trim();
+            const email = signupForm.querySelector('input[name="email"]')?.value?.trim();
+            const password = signupForm.querySelector('input[name="password"]')?.value;
+            const password2 = signupForm.querySelector('input[name="password2"]')?.value;
+            const submitButton = signupForm.querySelector('input[type="submit"]');
+
+            // Clear previous errors
+            const errorElement = document.getElementById('signup-error');
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+
+            // Validation
+            if (!username || !email || !password || !password2) {
+                showError('signup-error', 'Please fill in all fields');
+                return;
+            }
+
+            if (username.length < 3) {
+                showError('signup-error', 'Username must be at least 3 characters long');
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('signup-error', 'Please enter a valid email address');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('signup-error', 'Password must be at least 6 characters long');
+                return;
+            }
+
+            if (password !== password2) {
+                showError('signup-error', 'Passwords do not match');
+                return;
+            }
+
+            // Show loading state
+            const originalValue = submitButton ? submitButton.value : '';
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.value = 'Creating Account...';
+            }
+
+            try {
+                console.log('Attempting signup for:', email);
+                
+                const response = await fetch(`${getBaseUrl()}/signup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ username, email, password, password2 })
+                });
+
+                console.log('Signup response status:', response.status);
+
+                let data;
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    console.error('Failed to parse response as JSON');
+                    throw new Error('Server returned invalid response');
+                }
+
+                console.log('Signup response data:', data);
+
+                if (response.ok && data.success) {
+                    showSuccess('Account created successfully! Please check your email for verification.');
+                    
+                    // Clear form
+                    signupForm.reset();
+                    
+                    // Switch to login form
+                    setTimeout(() => {
+                        container.classList.remove("sign-up-mode");
+                    }, 2000);
+                } else {
+                    const errorMessage = data.message || data.error || 'Signup failed';
+                    showError('signup-error', errorMessage);
+                }
+
+            } catch (error) {
+                console.error('Signup error:', error);
+                showError('signup-error', 'Network error. Please try again.');
+            } finally {
+                // Reset button
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.value = originalValue;
+                }
+            }
+        });
+    }
+
+    console.log('Login/Signup handlers initialized');
 });

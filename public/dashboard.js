@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-
 function setDefaultDates() {
     const endDate = new Date();
     const startDate = new Date();
@@ -47,33 +46,23 @@ async function fetchData(startDate, endDate) {
         }
     }
 
-    // console.log('Fetching data...'); 
-    // console.log('Start Date:', startDate); 
-    // console.log('End Date:', endDate); 
-
     try {
         const response = await fetch(
             `${BASE_URL}/performance-report?startDate=${startDate}&endDate=${endDate}&groupBy=date`,
             { credentials: 'include' }
         );
 
-        // console.log('Response received:', response); 
-
         if (!response.ok) {
             const errorText = await response.text(); 
-            // console.error('Response not OK. Status:', response.status, 'Error Text:', errorText); 
             throw new Error('Failed to retrieve data');
         }
 
         const result = await response.json();
-        // console.log('Parsed JSON result:', result); 
 
         if (!result.data || !result.data.items) {
-            // console.error('No data available in result:', result); 
             throw new Error('No data available');
         }
 
-        // console.log('Updating chart, table, and summary stats with data:', result.data.items); 
         updateChart(result.data.items);
         updateTable(result.data.items);
         updateSummaryStats(result.data.items);
@@ -83,49 +72,80 @@ async function fetchData(startDate, endDate) {
     }
 }
 
+// FIXED: Simple campaign fetching from database
 async function fetchCampaignData() {
-    const startDate = document.getElementById('startDateCamp').value;
-    const endDate = document.getElementById('endDateCamp').value;
     const loadingDiv = document.getElementById('loading');
-
-    // console.log('Fetching campaign data...'); 
-    // console.log('Start Date:', startDate);
-    // console.log('End Date:', endDate);
+    
+    console.log('Fetching campaigns from database...');
 
     if (loadingDiv) loadingDiv.style.display = 'block';
 
     try {
-        const response = await fetch(
-            `${BASE_URL}/performance-report-campaign?startDate=${startDate}&endDate=${endDate}`,
-            { credentials: 'include' }
-        );
+        // Fetch campaigns directly from our database API
+        const response = await fetch(`${BASE_URL}/api/campaigns`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            credentials: 'include'
+        });
+
+        console.log('Campaign response status:', response.status);
 
         if (!response.ok) {
-            const errorText = await response.text(); 
-            // console.error('Response not OK. Status:', response.status, 'Error Text:', errorText); 
-            throw new Error('Fill date fields');
+            if (response.status === 401) {
+                throw new Error('Please log in to view campaigns');
+            }
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.message || 'Failed to fetch campaigns');
         }
 
         const result = await response.json();
+        console.log('Campaign response data:', result);
         
-        if (!result.data?.items?.length) {
-            throw new Error('No campaign data available');
+        if (!result.success) {
+            throw new Error(result.message || 'Failed to fetch campaigns');
         }
 
-        populateCampaignTable(result.data.items);
-    } catch (error) {
-        // console.error('Error occurred:', error); 
-        Toast.show(error.message, 'error');
-        const campaignTableBody = document.getElementById('campaignTableBody');
-        if (campaignTableBody) {
-            campaignTableBody.innerHTML = `
-                <div class="campaign-card empty">
-                    <p>No campaigns found. Create a new campaign to get started!</p>
-                </div>
-            `;
+        if (!result.data || result.data.length === 0) {
+            displayNoCampaigns();
+            return;
         }
+
+        populateCampaignTable(result.data);
+        
+    } catch (error) {
+        console.error('Error fetching campaigns:', error);
+        
+        let errorMessage = 'Unable to load campaigns';
+        if (error.message.includes('log in') || error.message.includes('Authentication')) {
+            errorMessage = 'Please log in to view your campaigns';
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 2000);
+        }
+        
+        if (window.Toast) {
+            Toast.show(errorMessage, 'error');
+        }
+        
+        displayNoCampaigns();
     } finally {
         if (loadingDiv) loadingDiv.style.display = 'none';
+    }
+}
+
+// Display message when no campaigns found
+function displayNoCampaigns() {
+    const campaignTableBody = document.getElementById('campaignTableBody');
+    if (campaignTableBody) {
+        campaignTableBody.innerHTML = `
+            <div class="campaign-card empty" style="text-align: center; padding: 40px; color: #666;">
+                <p style="font-size: 18px; margin-bottom: 10px;">No campaigns found</p>
+                <p style="font-size: 14px;">Create your first campaign to get started!</p>
+            </div>
+        `;
     }
 }
 
@@ -179,9 +199,13 @@ function updateSummaryStats(data) {
     `;
 }
 
+// UPDATED: Simplified campaign table population
 function populateCampaignTable(campaigns) {
     const tableBody = document.getElementById('campaignTableBody');
-    if (!tableBody) return;
+    if (!tableBody) {
+        console.error('Campaign table body not found');
+        return;
+    }
 
     tableBody.innerHTML = '';
 
@@ -189,28 +213,101 @@ function populateCampaignTable(campaigns) {
         const card = document.createElement('div');
         card.className = 'campaign-card';
 
-        // Format metrics with proper precision
-        const impressions = parseInt(campaign.impressions || 0).toLocaleString();
-        const clicks = parseInt(campaign.clicks || 0).toLocaleString();
-        const ctr = ((campaign.clicks / campaign.impressions) * 100 || 0).toFixed(2);
-        const cpm = parseFloat(campaign.cpm || 0).toFixed(2);
-        const spent = parseFloat(campaign.spent || 0).toFixed(2);
-        const conversions = parseInt(campaign.conversions || 0).toLocaleString();
-        const i2c = parseFloat(campaign.i2c || 0).toFixed(3);
-
+        // Format the date
+        const createdDate = new Date(campaign.createdAt).toLocaleDateString();
+        
+        // Create status badge
+        const statusClass = campaign.status === 'active' ? 'success' : 
+                           campaign.status === 'pending' ? 'warning' : 'danger';
+        
         card.innerHTML = `
-            <span>${campaign.campaign}</span>
-            <span>${impressions}</span>
-            <span>${conversions}</span>
-            <span>${clicks}</span>
-            <span>${ctr}%</span>
-            <span>$${cpm}</span>
-            <span>$${spent}</span>
-            <span>${i2c}</span>
+            <div class="campaign-info">
+                <div class="campaign-header">
+                    <h4 class="campaign-name">${campaign.campaignName}</h4>
+                    <span class="status-badge ${statusClass}">${campaign.status.toUpperCase()}</span>
+                </div>
+                <div class="campaign-details">
+                    <div class="detail-row">
+                        <span class="label">Device:</span>
+                        <span class="value">${campaign.deviceFormat}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Traffic Type:</span>
+                        <span class="value">${campaign.trafficType}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Ad Unit:</span>
+                        <span class="value">${campaign.adUnit}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Pricing:</span>
+                        <span class="value">${campaign.pricingType.toUpperCase()}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Countries:</span>
+                        <span class="value">${campaign.countries.slice(0, 3).join(', ')}${campaign.countries.length > 3 ? ` +${campaign.countries.length - 3} more` : ''}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Budget:</span>
+                        <span class="value price">$${campaign.price}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Created:</span>
+                        <span class="value">${createdDate}</span>
+                    </div>
+                </div>
+                <div class="campaign-actions">
+                    <button class="btn-small btn-primary" onclick="viewCampaign('${campaign._id}')">View</button>
+                    <button class="btn-small btn-secondary" onclick="editCampaign('${campaign._id}')">Edit</button>
+                    <button class="btn-small btn-danger" onclick="deleteCampaign('${campaign._id}')">Delete</button>
+                </div>
+            </div>
         `;
 
         tableBody.appendChild(card);
     });
+}
+
+// Campaign action functions
+function viewCampaign(campaignId) {
+    console.log('View campaign:', campaignId);
+    // You can implement campaign viewing logic here
+    Toast.show('Campaign view feature coming soon!', 'info');
+}
+
+function editCampaign(campaignId) {
+    console.log('Edit campaign:', campaignId);
+    // You can implement campaign editing logic here
+    Toast.show('Campaign edit feature coming soon!', 'info');
+}
+
+async function deleteCampaign(campaignId) {
+    if (!confirm('Are you sure you want to delete this campaign?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${BASE_URL}/api/campaigns/${campaignId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            Toast.show('Campaign deleted successfully!', 'success');
+            // Refresh the campaign list
+            fetchCampaignData();
+        } else {
+            Toast.show(result.message || 'Failed to delete campaign', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting campaign:', error);
+        Toast.show('Error deleting campaign', 'error');
+    }
 }
 
 // Initialize dashboard
@@ -237,30 +334,32 @@ const sideMenu = document.querySelector("aside");
 const menuBtn = document.querySelector("#menu-btn");
 const closeBtn = document.querySelector("#close-btn");
 
-menuBtn.addEventListener("click", () => {
-    sideMenu.style.display = "block";
-});
+if (menuBtn) {
+    menuBtn.addEventListener("click", () => {
+        sideMenu.style.display = "block";
+    });
+}
 
-closeBtn.addEventListener("click", () => {
-    sideMenu.style.display = "none";
-});
+if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+        sideMenu.style.display = "none";
+    });
+}
 
-// Add event listeners for date inputs
-document.getElementById('startDate').addEventListener('change', () => {
+// REMOVED: Date change handlers for campaigns (no longer needed)
+// Only keep date handlers for performance reports
+
+document.getElementById('startDate')?.addEventListener('change', () => {
     const activeTab = document.querySelector('.tab-content[style="display: block"]')?.id;
     if (activeTab === 'performance' || activeTab === 'datatable') {
         fetchData();
-    } else if (activeTab === 'campaign') {
-        fetchCampaignData();
     }
 });
 
-document.getElementById('endDate').addEventListener('change', () => {
+document.getElementById('endDate')?.addEventListener('change', () => {
     const activeTab = document.querySelector('.tab-content[style="display: block"]')?.id;
     if (activeTab === 'performance' || activeTab === 'datatable') {
         fetchData();
-    } else if (activeTab === 'campaign') {
-        fetchCampaignData();
     }
 });
 
@@ -288,13 +387,15 @@ function showTab(targetId) {
 
     const dateDiv = document.getElementById('dateDiv');
     if (dateDiv) {
-        const hideDateTabs = ['dashboard', 'newCampaign', 'support', 'traffic'];
+        // Hide date inputs for campaigns since we don't need them anymore
+        const hideDateTabs = ['dashboard', 'newCampaign', 'support', 'traffic', 'campaign'];
         dateDiv.style.display = hideDateTabs.includes(targetId) ? 'none' : 'block';
     }
 
     // Handle tab-specific actions
     switch (targetId) {
         case 'campaign':
+            // Simply fetch campaigns from database - no date needed
             fetchCampaignData();
             break;
         case 'performance':
@@ -339,6 +440,7 @@ function handleNewCampaignTab() {
     sessionStorage.removeItem('recommendedCPM');
 }
 
+// SIMPLIFIED: Only handle date changes for performance reports
 function handleDateChange() {
     const activeTab = document.body.getAttribute('data-active-tab');
     let startDate, endDate;
@@ -354,40 +456,10 @@ function handleDateChange() {
             endDate = document.getElementById('endDateTable').value;
             fetchData(startDate, endDate);
             break;
-        case 'campaign':
-            fetchCampaignData();
-            break;
-    }
-}
-function setupDateListeners() {
-    const startDateCamp = document.getElementById('startDateCamp');
-    const endDateCamp = document.getElementById('endDateCamp');
-    if (startDateCamp && endDateCamp) {
-        startDateCamp.addEventListener('change', handleDateChange);
-        endDateCamp.addEventListener('change', handleDateChange);
-    }
-
-    const startDate = document.getElementById('startDate');
-    const endDate = document.getElementById('endDate');
-    if (startDate && endDate) {
-        startDate.addEventListener('change', handleDateChange);
-        endDate.addEventListener('change', handleDateChange);
-    }
-
-    const startDateTable = document.getElementById('startDateTable');
-    const endDateTable = document.getElementById('endDateTable');
-    if (startDateTable && endDateTable) {
-        startDateTable.addEventListener('change', handleDateChange);
-        endDateTable.addEventListener('change', handleDateChange);
+        // Removed campaign case - no longer needs date handling
     }
 }
 
-document.getElementById('startDate').addEventListener('change', handleDateChange);
-document.getElementById('endDate').addEventListener('change', handleDateChange);
-document.getElementById('startDateTable').addEventListener('change', handleDateChange);
-document.getElementById('endDateTable').addEventListener('change', handleDateChange);
-
-document.addEventListener('DOMContentLoaded', setupDateListeners);
 document.addEventListener('DOMContentLoaded', () => {
     const faqItems = document.querySelectorAll('.faq-item');
 
@@ -396,29 +468,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const answer = item.querySelector('.faq-answer');
         const icon = question.querySelector('.material-icons-sharp');
 
-        question.addEventListener('click', () => {
-            // Toggle active class
-            item.classList.toggle('active');
+        if (question && answer && icon) {
+            question.addEventListener('click', () => {
+                // Toggle active class
+                item.classList.toggle('active');
 
-            // Slide toggle answer
-            if (answer.style.maxHeight) {
-                answer.style.maxHeight = null;
-                icon.textContent = 'expand_more';
-            } else {
-                answer.style.maxHeight = answer.scrollHeight + "px";
-                icon.textContent = 'expand_less';
-            }
-
-            // Close other FAQ items
-            faqItems.forEach(otherItem => {
-                if (otherItem !== item) {
-                    otherItem.classList.remove('active');
-                    const otherAnswer = otherItem.querySelector('.faq-answer');
-                    const otherIcon = otherItem.querySelector('.material-icons-sharp');
-                    otherAnswer.style.maxHeight = null;
-                    otherIcon.textContent = 'expand_more';
+                // Slide toggle answer
+                if (answer.style.maxHeight) {
+                    answer.style.maxHeight = null;
+                    icon.textContent = 'expand_more';
+                } else {
+                    answer.style.maxHeight = answer.scrollHeight + "px";
+                    icon.textContent = 'expand_less';
                 }
+
+                // Close other FAQ items
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== item) {
+                        otherItem.classList.remove('active');
+                        const otherAnswer = otherItem.querySelector('.faq-answer');
+                        const otherIcon = otherItem.querySelector('.material-icons-sharp');
+                        if (otherAnswer && otherIcon) {
+                            otherAnswer.style.maxHeight = null;
+                            otherIcon.textContent = 'expand_more';
+                        }
+                    }
+                });
             });
-        });
+        }
     });
 });
