@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
-                    credentials: 'include', // Important for session cookies
+                    credentials: 'include',
                     body: JSON.stringify({ email, password })
                 });
 
@@ -108,12 +108,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (response.ok && data.success) {
                     showSuccess('Login successful! Redirecting...');
-                    // Redirect after a short delay
                     setTimeout(() => {
                         window.location.href = data.redirectUrl || '/dashboard.html';
                     }, 1000);
                 } else {
-                    // Show error message from server
                     const errorMessage = data.message || data.error || 'Login failed';
                     showError('login-error', errorMessage);
                 }
@@ -131,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Signup form handler with real-time validation
+    // Signup form handler
     const signupForm = document.querySelector('.sign-up-form');
     if (signupForm) {
         // Real-time validation for email and username
@@ -267,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Signup response data:', data);
 
                 if (response.ok && data.success) {
-                    showSuccess('Account created successfully! Please check your email for verification.');
+                    showSuccess('Account created successfully! You can now log in.');
                     
                     // Clear form
                     signupForm.reset();
@@ -297,12 +295,12 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Login/Signup handlers initialized');
 });
 
-
+// Simple authentication check for dashboard pages
 document.addEventListener('DOMContentLoaded', async function() {
     // Only check auth on dashboard pages
     if (window.location.pathname.includes('dashboard')) {
         try {
-            const response = await fetch('/session-debug', {
+            const response = await fetch('/session-status', {
                 credentials: 'include',
                 headers: {
                     'Accept': 'application/json'
@@ -315,19 +313,19 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 if (!sessionInfo.isAuthenticated) {
                     console.log('User not authenticated, redirecting to login');
-                    window.location.href = '/login.html?mode=signin';
+                    window.location.href = '/login';
                     return;
                 }
                 
                 console.log('User authenticated successfully');
             } else {
                 console.log('Session check failed, redirecting to login');
-                window.location.href = '/login.html?mode=signin';
+                window.location.href = '/login';
                 return;
             }
         } catch (error) {
             console.error('Auth check error:', error);
-            window.location.href = '/login.html?mode=signin';
+            window.location.href = '/login';
             return;
         }
     }

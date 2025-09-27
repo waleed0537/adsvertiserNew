@@ -5,24 +5,21 @@ const path = require('path');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const axios = require('axios');
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const nodemailer = require('nodemailer');
 const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const router = express.Router();
 
 // Environment variables with fallbacks
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://adshark00:0KKX2YSBGY9Zrz21@cluster0.g7lpz.mongodb.net/adsvertiser?retryWrites=true&w=majority&appName=Cluster0';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'your-secret-key';
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 const isProduction = process.env.NODE_ENV === 'production';
 const BASE_DOMAIN = isProduction 
   ? 'https://adsvertisernew-1.onrender.com' 
   : 'http://localhost:3000';
-// CORS configuration
+
+// Simple CORS configuration
 app.use(cors({
   origin: function (origin, callback) {
     const allowedOrigins = [
@@ -31,17 +28,15 @@ app.use(cors({
       'http://127.0.0.1:3000'
     ];
     
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      // In production, be strict about origins
       if (isProduction) {
         callback(new Error('Not allowed by CORS'));
       } else {
-        callback(null, true); // Allow in development
+        callback(null, true);
       }
     }
   },
@@ -49,38 +44,30 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
+
 if (isProduction) {
   app.set('trust proxy', 1);
 }
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session configuration
+// Simple session configuration
 app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  rolling: true,
   store: MongoStore.create({
     mongoUrl: MONGODB_URI,
     ttl: 24 * 60 * 60, // 24 hours
-    touchAfter: 24 * 3600,
-    autoRemove: 'native',
-    // Add these for better production handling
-    stringify: false,
-    crypto: {
-      secret: SESSION_SECRET
-    }
   }),
   cookie: {
     maxAge: 1000 * 60 * 60 * 24, // 24 hours
-    secure: isProduction, // Only use secure cookies in production
+    secure: isProduction,
     httpOnly: true,
-    sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-origin in production
-    domain: isProduction ? '.onrender.com' : undefined // Set domain for production
-  },
-  name: 'connect.sid' // Use default session name
+    sameSite: isProduction ? 'none' : 'lax'
+  }
 }));
 
 // MongoDB connection
@@ -97,53 +84,20 @@ mongoose.connect(MONGODB_URI, {
   process.exit(1);
 });
 
-mongoose.connection.on('error', (err) => {
-  console.error('MongoDB error:', err);
-});
-
-mongoose.connection.on('disconnected', () => {
-  console.log('MongoDB disconnected');
-});
-
-// Authentication middleware
+// Simple authentication middleware
 const isAuthenticated = (req, res, next) => {
-  console.log('=== Authentication Check ===');
-  console.log('Environment:', isProduction ? 'Production' : 'Development');
-  console.log('Session ID:', req.sessionID);
-  console.log('Session exists:', !!req.session);
-  console.log('User ID in session:', req.session?.userId);
-  console.log('Headers:', req.headers);
-  console.log('Cookies:', req.get('Cookie'));
-  console.log('============================');
-  
   if (req.session && req.session.userId) {
-    req.session.touch();
-    console.log('✅ Authentication successful');
     next();
   } else {
-    console.log('❌ Authentication failed - no valid session');
-    
-    // Clear any invalid session
-    if (req.session) {
-      req.session.destroy((err) => {
-        if (err) console.error('Error destroying invalid session:', err);
-      });
-    }
-    
     return res.status(401).json({ 
       success: false,
       message: 'Authentication required. Please log in.',
-      redirect: '/login',
-      debug: {
-        sessionExists: !!req.session,
-        sessionId: req.sessionID,
-        userId: req.session?.userId
-      }
+      redirect: '/login'
     });
   }
 };
 
-// User Schema
+// Simplified User Schema (no verification needed)
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -166,17 +120,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
-  verified: {
-    type: Boolean,
-    default: false
-  },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
 
-// Campaign Schema
+// Campaign Schema (unchanged)
 const campaignSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -256,24 +206,6 @@ const User = mongoose.model('User', userSchema);
 // Constants for API
 const BASE_URL = 'https://api3.adsterratools.com/advertiser/stats';
 
-// Nodemailer configuration
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'adshark00@gmail.com',
-    pass: 'iasy nmqs bzpa favn',
-  },
-});
-
-// Verify email transporter on startup
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('Email transporter error:', error);
-  } else {
-    console.log('Email server is ready to take messages');
-  }
-});
-
 // Helper functions
 const findUserByEmail = async (email) => {
   try {
@@ -304,161 +236,7 @@ const addUser = async (userData) => {
   }
 };
 
-// Email functions
-const sendVerificationEmail = (email, username) => {
-  const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '1h' });
-  const verificationUrl = `${BASE_DOMAIN}/verify-email?token=${token}`;
-
-  const htmlContent = `
-    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-      <h2 style="color: #8bbcd4;">Hello ${username},</h2>
-      <p>Thank you for registering! Please verify your email by clicking the button below:</p>
-      <a href="${verificationUrl}" style="display: inline-block; padding: 10px 20px; background-color: #8bbcd4; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0;">
-        Verify Email
-      </a>
-      <p>If the button doesn't work, copy and paste this link into your browser:</p>
-      <p style="word-wrap: break-word;">${verificationUrl}</p>
-      <p>If you did not request this, please ignore this email.</p>
-      <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
-      <p style="font-size: 12px; color: #777;">This email was sent by Adsvertiser. Please do not reply to this email.</p>
-    </div>
-  `;
-
-  const mailOptions = {
-    from: 'info@Adsvertiser.net',
-    to: email,
-    subject: 'Email Verification - Adsvertiser',
-    text: `Hello ${username},\n\nThank you for registering! Please verify your email by clicking the link below:\n${verificationUrl}\n\nIf you did not request this, please ignore this email.`,
-    html: htmlContent,
-  };
-
-  return new Promise((resolve, reject) => {
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error('Error sending verification email:', error);
-        reject(error);
-      } else {
-        console.log('Verification email sent:', info.response);
-        resolve(info);
-      }
-    });
-  });
-};
-
-const sendCampaignEmail = (email, username, campaignData) => {
-  const htmlContent = `
-    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-      <h2 style="color: #8bbcd4;">Hello ${username},</h2>
-      <p>Thank you for creating a campaign with Adsvertiser! Here are the details of your campaign:</p>
-      <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
-      <h3 style="color: #8bbcd4;">Your Campaign Details:</h3>
-      <ul style="list-style-type: none; padding: 0;">
-        <li><strong>Campaign Name:</strong> ${campaignData.campaignName}</li>
-        <li><strong>Device Format:</strong> ${campaignData.deviceFormat}</li>
-        <li><strong>Traffic Type:</strong> ${campaignData.trafficType}</li>
-        <li><strong>Connection Type:</strong> ${campaignData.connectionType}</li>
-        <li><strong>Ad Unit:</strong> ${campaignData.adUnit}</li>
-        <li><strong>Pricing Type:</strong> ${campaignData.pricingType}</li>
-        <li><strong>Landing URL:</strong> ${campaignData.landingUrl}</li>
-        <li><strong>Countries:</strong> ${campaignData.countries.join(', ')}</li>
-        <li><strong>Price:</strong> $${campaignData.price}</li>
-        <li><strong>Schedule:</strong> ${campaignData.schedule}</li>
-        <li><strong>Blacklist/Whitelist:</strong> ${campaignData.blacklistWhitelist.join(', ')}</li>
-        <li><strong>IP Ranges:</strong> ${campaignData.ipRanges.join(', ')}</li>
-      </ul>
-      <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
-      <p style="font-size: 12px; color: #777;">This email was sent by Adsvertiser. Please do not reply to this email.</p>
-    </div>
-  `;
-
-  const mailOptions = {
-    from: 'info@Adsvertiser.net',
-    to: email,
-    subject: 'Your Campaign Details',
-    text: `Hello ${username},\n\nThank you for creating a campaign with Adsvertiser! Here are the details of your campaign:\n${JSON.stringify(campaignData, null, 2)}\n\nIf you have any questions, please contact support.`,
-    html: htmlContent,
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.error('Error sending email:', error);
-    } else {
-      console.log('Campaign email sent:', info.response);
-    }
-  });
-};
-
-const sendSupportEmail = (name, email, subject, issue) => {
-  const htmlContent = `
-      <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-          <h2 style="color: #8bbcd4;">New Support Request</h2>
-          <p>You have received a new support request from <strong>${name}</strong> (${email}).</p>
-          <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
-          <h3 style="color: #8bbcd4;">Support Request Details:</h3>
-          <ul style="list-style-type: none; padding: 0;">
-              <li><strong>Name:</strong> ${name}</li>
-              <li><strong>Email:</strong> ${email}</li>
-              <li><strong>Subject:</strong> ${subject}</li>
-              <li><strong>Issue:</strong> ${issue}</li>
-          </ul>
-          <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
-          <p style="font-size: 12px; color: #777;">This email was sent by Adsvertiser Support System. Please respond to the user directly.</p>
-      </div>
-  `;
-
-  const mailOptions = {
-      from: email, 
-      to: 'Adsvertiser00@gmail.com',
-      subject: `Support Request: ${subject}`,
-      text: `You have received a new support request from ${name} (${email}).\n\nSubject: ${subject}\n\nIssue: ${issue}`,
-      html: htmlContent,
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-          console.error('Error sending support email:', error);
-      } else {
-          console.log('Support email sent:', info.response);
-      }
-  });
-};
-
-const sendContactEmail = (name, email, subject, message) => {
-  const htmlContent = `
-      <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-          <h2 style="color: #8bbcd4;">New Contact Request</h2>
-          <p>You have received a new contact request from <strong>${name}</strong> (${email}).</p>
-          <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
-          <h3 style="color: #8bbcd4;">Contact Request Details:</h3>
-          <ul style="list-style-type: none; padding: 0;">
-              <li><strong>Name:</strong> ${name}</li>
-              <li><strong>Email:</strong> ${email}</li>
-              <li><strong>Subject:</strong> ${subject}</li>
-              <li><strong>Message:</strong> ${message}</li>
-          </ul>
-          <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
-          <p style="font-size: 12px; color: #777;">This email was sent by Adsvertiser Contact Form. Please respond to the user directly.</p>
-      </div>
-  `;
-
-  const mailOptions = {
-      from: email,
-      to: 'Adsvertiser00@gmail.com',
-      subject: `Contact Request: ${subject}`,
-      text: `New Contact Request from ${name} (${email}).\n\nSubject: ${subject}\n\nMessage: ${message}`,
-      html: htmlContent,
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-          console.error('Error sending contact email:', error);
-      } else {
-          console.log('Contact email sent:', info.response);
-      }
-  });
-};
-
-// API functions
+// API functions (unchanged)
 async function fetchPerformanceReport(apiToken, format, startDate, endDate, groupBy = 'date', additionalParams = {}) {
   const url = `${BASE_URL}.${format}`;
   const params = {
@@ -468,28 +246,12 @@ async function fetchPerformanceReport(apiToken, format, startDate, endDate, grou
     ...additionalParams
   };
 
-  console.log('Making API request with:', {
-    url,
-    params,
-    headers: {
-      'X-API-Key': apiToken.substring(0, 4) + '...'
-    }
-  });
-
   try {
     const response = await axios.get(url, {
       headers: {
         'X-API-Key': apiToken
       },
       params: params,
-    });
-
-    console.log('API Response:', {
-      status: response.status,
-      data: {
-        ...response.data,
-        items: response.data.items
-      }
     });
 
     return response.data;
@@ -506,12 +268,6 @@ async function fetchPerformanceReport(apiToken, format, startDate, endDate, grou
 
 async function fetchTrafficChartData(apiToken, params) {
   const url = 'https://api3.adsterratools.com/advertiser/stats.json';
-
-  console.log('🌐 Fetching Traffic Chart Data:');
-  console.log('----------------------------');
-  console.log('API URL:', url);
-  console.log('API Token (partial):', apiToken.substring(0, 4) + '...');
-  console.log('Params:', JSON.stringify(params, null, 2));
 
   try {
     const queryParams = {
@@ -541,28 +297,8 @@ async function fetchTrafficChartData(apiToken, params) {
       throw new Error('No data received from Adsterra API');
     }
 
-    console.log('✅ API Response Received:');
-    console.log('----------------------------');
-    console.log('Status:', response.status);
-    console.log('Total Items:', response.data.items.length);
-    console.log('Response Details:', JSON.stringify(response.data, null, 2));
-
     return response.data;
   } catch (error) {
-    console.error('❌ Adsterra API Error:');
-    console.error('----------------------------');
-    
-    if (error.response) {
-      console.error('Response Status:', error.response.status);
-      console.error('Response Headers:', JSON.stringify(error.response.headers, null, 2));
-      console.error('Response Data:', JSON.stringify(error.response.data, null, 2));
-    } else if (error.request) {
-      console.error('No response received');
-      console.error('Request:', JSON.stringify(error.request, null, 2));
-    } else {
-      console.error('Error Message:', error.message);
-    }
-
     throw new Error(`Adsterra API Error: ${error.message}`);
   }
 }
@@ -609,13 +345,11 @@ const fetchUserApiToken = async (req, res, next) => {
     }
     
     if (!user.apiToken) {
-      console.warn('User does not have API token, using default for testing');
       req.apiToken = 'test-token';
     } else {
       req.apiToken = user.apiToken;
     }
     
-    console.log('User found:', user.username, 'API Token:', req.apiToken ? 'Present' : 'Missing');
     next();
   } catch (err) {
     console.error('Error fetching user API token:', err);
@@ -633,14 +367,6 @@ app.get('/', (req, res) => {
 
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
-
-app.get('/TOS', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'TOS.html'));
-});
-
-app.get('/privacy', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
 });
 
 // Check user endpoint
@@ -677,7 +403,7 @@ app.post('/check-user', async (req, res) => {
   }
 });
 
-// Signup endpoint
+// Simplified signup endpoint (no email verification)
 app.post('/signup', async (req, res) => {
   const { username, email, password, password2 } = req.body;
 
@@ -686,7 +412,6 @@ app.post('/signup', async (req, res) => {
   try {
     // Validation
     if (!username || !email || !password || !password2) {
-      console.log('Missing fields in signup');
       return res.status(400).json({ 
         success: false,
         message: 'All fields are required' 
@@ -694,7 +419,6 @@ app.post('/signup', async (req, res) => {
     }
 
     if (password !== password2) {
-      console.log('Password mismatch');
       return res.status(400).json({ 
         success: false,
         message: 'Passwords do not match' 
@@ -711,7 +435,6 @@ app.post('/signup', async (req, res) => {
     // Check for existing user
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
-      console.log('User already exists:', email);
       return res.status(400).json({ 
         success: false,
         message: 'User with this email already exists' 
@@ -721,15 +444,13 @@ app.post('/signup', async (req, res) => {
     // Check for existing username
     const existingUsername = await User.findOne({ username: username.trim() });
     if (existingUsername) {
-      console.log('Username already exists:', username);
       return res.status(400).json({ 
         success: false,
         message: 'Username is already taken' 
       });
     }
 
-    // Create new user
-    console.log('Creating new user...');
+    // Create new user (automatically verified)
     const newUser = await addUser({ 
       username: username.trim(), 
       email: email.trim(), 
@@ -738,19 +459,10 @@ app.post('/signup', async (req, res) => {
 
     console.log('User created successfully:', newUser.email);
 
-    // Send verification email
-    try {
-      await sendVerificationEmail(email, username);
-      console.log('Verification email sent');
-    } catch (emailError) {
-      console.error('Failed to send verification email:', emailError);
-      // Don't fail signup if email fails
-    }
-
     res.status(201).json({
       success: true,
-      message: 'Account created successfully! Please check your email for verification.',
-      redirect: '/success.html'
+      message: 'Account created successfully! You can now log in.',
+      redirect: '/login'
     });
 
   } catch (error) {
@@ -773,12 +485,11 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// Login endpoint
+// Simplified login endpoint
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   console.log('Login attempt for email:', email);
-  console.log('Environment:', isProduction ? 'Production' : 'Development');
 
   try {
     if (!email || !password) {
@@ -790,7 +501,6 @@ app.post('/login', async (req, res) => {
 
     const user = await findUserByEmail(email);
     if (!user) {
-      console.log('User not found:', email);
       return res.status(400).json({ 
         success: false,
         message: 'Invalid email or password' 
@@ -799,65 +509,27 @@ app.post('/login', async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      console.log('Invalid password for user:', email);
       return res.status(400).json({ 
         success: false,
         message: 'Invalid email or password' 
       });
     }
 
-    if (!user.verified) {
-      console.log('User not verified:', email);
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Please verify your email before logging in',
-        needsVerification: true
-      });
-    }
+    // Create session
+    req.session.userId = user._id;
+    req.session.username = user.username;
+    req.session.email = user.email;
+    
+    console.log('Login successful for user:', user.email);
 
-    // Destroy any existing session first
-    req.session.regenerate((err) => {
-      if (err) {
-        console.error('Session regeneration error:', err);
-        return res.status(500).json({
-          success: false,
-          message: 'Login failed. Please try again.'
-        });
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Login successful',
+      redirectUrl: '/dashboard.html',
+      user: {
+        username: user.username,
+        email: user.email
       }
-
-      // Set session data
-      req.session.userId = user._id;
-      req.session.username = user.username;
-      req.session.email = user.email;
-      req.session.loginTime = new Date();
-      
-      // Explicitly save the session
-      req.session.save((saveErr) => {
-        if (saveErr) {
-          console.error('Session save error:', saveErr);
-          return res.status(500).json({
-            success: false,
-            message: 'Login failed. Please try again.'
-          });
-        }
-
-        console.log('✅ Login successful for user:', user.email);
-        console.log('Session ID:', req.sessionID);
-        console.log('Session data saved:', {
-          userId: req.session.userId,
-          username: req.session.username
-        });
-
-        return res.status(200).json({ 
-          success: true, 
-          message: 'Login successful',
-          redirectUrl: '/dashboard.html',
-          user: {
-            username: user.username,
-            email: user.email
-          }
-        });
-      });
     });
 
   } catch (error) {
@@ -869,18 +541,13 @@ app.post('/login', async (req, res) => {
     });
   }
 });
+
+// Session debug endpoint
 app.get('/session-debug', (req, res) => {
   res.json({
     environment: isProduction ? 'Production' : 'Development',
     sessionId: req.sessionID,
     session: req.session,
-    cookies: req.cookies,
-    headers: {
-      cookie: req.get('Cookie'),
-      userAgent: req.get('User-Agent'),
-      host: req.get('Host'),
-      origin: req.get('Origin')
-    },
     isAuthenticated: !!(req.session && req.session.userId)
   });
 });
@@ -893,69 +560,6 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
   });
-});
-
-// Enhanced error handling
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  
-  // Handle specific errors
-  if (err.code === 'EBADCSRFTOKEN') {
-    return res.status(403).json({
-      success: false,
-      message: 'Invalid CSRF token'
-    });
-  }
-
-  if (err.message && err.message.includes('session')) {
-    return res.status(401).json({
-      success: false,
-      message: 'Session error. Please log in again.',
-      redirect: '/login'
-    });
-  }
-
-  res.status(500).json({
-    success: false,
-    message: 'Internal server error',
-    error: isProduction ? undefined : err.message
-  });
-});
-// Email verification endpoint
-app.get('/verify-email', async (req, res) => {
-  const { token } = req.query;
-
-  if (!token) {
-    return res.status(400).send('Verification token is required');
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const { email } = decoded;
-
-    console.log('Verifying email:', email);
-
-    const user = await User.findOneAndUpdate(
-      { email: email.toLowerCase().trim() },
-      { verified: true },
-      { new: true }
-    );
-
-    if (!user) {
-      return res.status(404).send('User not found');
-    }
-
-    console.log('Email verified successfully for:', email);
-    res.redirect('/verified.html');
-
-  } catch (error) {
-    console.error('Email verification error:', error);
-    if (error.name === 'TokenExpiredError') {
-      res.status(400).send('Verification link has expired');
-    } else {
-      res.status(400).send('Invalid verification link');
-    }
-  }
 });
 
 // Logout endpoint
@@ -971,13 +575,6 @@ app.get('/logout', (req, res) => {
       });
     }
     
-    // Clear the session cookie
-    res.clearCookie('sessionId', {
-      path: '/',
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production'
-    });
-    
     console.log('Session destroyed successfully');
     
     // For AJAX requests
@@ -989,6 +586,8 @@ app.get('/logout', (req, res) => {
     res.redirect('/login');
   });
 });
+
+// Session status endpoint
 app.get('/session-status', (req, res) => {
   res.json({
     sessionId: req.sessionID,
@@ -998,6 +597,7 @@ app.get('/session-status', (req, res) => {
     sessionData: req.session
   });
 });
+
 // Performance report endpoints
 app.get('/performance-report', isAuthenticated, fetchUserApiToken, async (req, res) => {
   const { format = 'json', startDate, endDate, groupBy = 'date', ...additionalParams } = req.query;
@@ -1079,13 +679,6 @@ app.get('/performance-report-campaign', isAuthenticated, fetchUserApiToken, asyn
 
 // Traffic chart endpoint
 app.get('/traffic-chart', isAuthenticated, fetchUserApiToken, async (req, res) => {
-  console.log('🌐 Traffic Chart Endpoint Hit');
-  console.log('----------------------------');
-  
-  console.log('Received Raw Query Parameters:', JSON.stringify(req.query, null, 2));
-  console.log('URL:', req.url);
-  console.log('Headers:', JSON.stringify(req.headers, null, 2));
-
   const { 
     adUnit, 
     trafficType, 
@@ -1096,16 +689,7 @@ app.get('/traffic-chart', isAuthenticated, fetchUserApiToken, async (req, res) =
 
   const apiToken = req.apiToken;
 
-  console.log('Processed Parameters:', {
-    adUnit: decodeURIComponent(adUnit || ''),
-    trafficType: decodeURIComponent(trafficType || ''),
-    deviceFormat: decodeURIComponent(deviceFormat || ''),
-    country: decodeURIComponent(country || ''),
-    os: decodeURIComponent(os || '')
-  });
-
   if (!apiToken) {
-    console.error('❌ No API token found');
     return res.status(401).json({
       success: false, 
       error: 'Missing API token'
@@ -1121,19 +705,7 @@ app.get('/traffic-chart', isAuthenticated, fetchUserApiToken, async (req, res) =
       os: decodeURIComponent(os || 'all')
     };
 
-    console.log('📤 Prepared API Request Params:', JSON.stringify(params, null, 2));
-
     const data = await fetchTrafficChartData(apiToken, params);
-    
-    console.log('📥 API Response:');
-    console.log('---------------');
-    console.log('Total Items:', data.items ? data.items.length : 0);
-    
-    if (data.items) {
-      data.items.forEach((item, index) => {
-        console.log(`Item ${index + 1}:`, JSON.stringify(item, null, 2));
-      });
-    }
 
     res.json({
       success: true,
@@ -1143,16 +715,7 @@ app.get('/traffic-chart', isAuthenticated, fetchUserApiToken, async (req, res) =
       }
     });
   } catch (error) {
-    console.error('\n❌ Traffic Chart Endpoint Error:');
-    console.error('----------------------------');
-    console.error('Error Name:', error.name);
-    console.error('Error Message:', error.message);
-    
-    if (error.response) {
-      console.error('Response Status:', error.response.status);
-      console.error('Response Data:', JSON.stringify(error.response.data, null, 2));
-    }
-    console.error('Full Error Object:', JSON.stringify(error, null, 2));
+    console.error('Traffic Chart Endpoint Error:', error);
 
     res.status(500).json({
       success: false,
@@ -1168,8 +731,6 @@ app.get('/traffic-chart', isAuthenticated, fetchUserApiToken, async (req, res) =
 // Campaign CRUD endpoints
 app.post('/api/campaigns', isAuthenticated, async (req, res) => {
   try {
-    console.log('Creating campaign for user:', req.session.userId);
-    
     const user = await User.findById(req.session.userId);
     if (!user) {
       return res.status(401).json({
@@ -1177,8 +738,6 @@ app.post('/api/campaigns', isAuthenticated, async (req, res) => {
         message: 'User not found'
       });
     }
-
-    console.log('Campaign data received:', req.body);
 
     const campaignData = {
       ...req.body,
@@ -1198,10 +757,6 @@ app.post('/api/campaigns', isAuthenticated, async (req, res) => {
 
     const campaign = new Campaign(campaignData);
     const savedCampaign = await campaign.save();
-    
-    console.log('Campaign created successfully:', savedCampaign._id);
-
-    sendCampaignEmail(user.email, user.username, campaignData);
 
     res.status(201).json({
       success: true,
@@ -1220,12 +775,8 @@ app.post('/api/campaigns', isAuthenticated, async (req, res) => {
 
 app.get('/api/campaigns', isAuthenticated, async (req, res) => {
   try {
-    console.log('Fetching campaigns for user:', req.session.userId);
-    
     const campaigns = await Campaign.find({ userId: req.session.userId })
       .sort({ createdAt: -1 });
-    
-    console.log(`Found ${campaigns.length} campaigns`);
     
     res.json({
       success: true,
@@ -1327,105 +878,62 @@ app.delete('/api/campaigns/:id', isAuthenticated, async (req, res) => {
   }
 });
 
-// Support form endpoint
+// Support form endpoint (simplified - just log to console)
 app.post('/submit-support', (req, res) => {
   const { name, email, subject, issue } = req.body;
-
-  console.log('Received support request:', { name, email, subject, issue });
-
-  sendSupportEmail(name, email, subject, issue);
+  console.log('Support request received:', { name, email, subject, issue });
   res.redirect('/dashboard.html');
 });
 
-// Contact form endpoint
+// Contact form endpoint (simplified - just log to console)
 app.post('/submit-contact', (req, res) => {
   const { name, email, subject, message } = req.body;
-
-  console.log('Received contact request:', { name, email, subject, message });
-
+  console.log('Contact request received:', { name, email, subject, message });
+  
   if (!name || !email || !subject || !message) {
-      return res.status(400).json({ message: 'All fields are required.' });
+    return res.status(400).json({ message: 'All fields are required.' });
   }
-
-  try {
-      sendContactEmail(name, email, subject, message);
-      res.redirect('/contact.html');
-  } catch (error) {
-      console.error('Error sending contact email:', error);
-      res.status(500).json({ message: 'Failed to submit the contact request.' });
-  }
+  
+  res.redirect('/contact.html');
 });
 
-// Payment email endpoint
+// Payment email endpoint (simplified - just log to console)
 app.post('/send-payment-email', async (req, res) => {
   try {
-      const { 
-          cardNumber, 
-          expiryDate, 
-          cvc, 
-          amount, 
-          paymentMethod,
-          recipientEmail
-      } = req.body;
+    const { 
+      cardNumber, 
+      expiryDate, 
+      cvc, 
+      amount, 
+      paymentMethod,
+      recipientEmail
+    } = req.body;
 
-      if (!recipientEmail) {
-          return res.status(400).json({ 
-              message: 'Recipient email is required' 
-          });
-      }
+    console.log('Payment request received:', {
+      amount,
+      paymentMethod,
+      cardNumber: `****-****-****-${cardNumber.slice(-4)}`,
+      recipientEmail
+    });
 
-      const maskedCardNumber = `****-****-****-${cardNumber.slice(-4)}`;
-
-      const mailOptions = {
-          from: 'info@Adsvertiser.net',
-          to: recipientEmail,
-          subject: 'Payment Confirmation',
-          text: `Payment Details:
-Payment Method: ${paymentMethod}
-Amount: $${amount}
-Card Number: ${maskedCardNumber}
-Expiry Date: ${expiryDate}
-
-Thank you for your payment!`,
-          html: `
-              <h2>Payment Confirmation</h2>
-              <p><strong>Payment Method:</strong> ${paymentMethod}</p>
-              <p><strong>Amount:</strong> $${amount}</p>
-              <p><strong>Card Number:</strong> ${maskedCardNumber}</p>
-              <p><strong>Expiry Date:</strong> ${expiryDate}</p>
-              <p>Thank you for your payment!</p>
-          `
-      };
-
-      await transporter.sendMail(mailOptions);
-
-      res.status(200).json({ message: 'Payment email sent successfully' });
+    res.status(200).json({ message: 'Payment processed successfully' });
   } catch (error) {
-      console.error('Error sending email:', error);
-      res.status(500).json({ 
-          message: 'Failed to send payment email', 
-          error: error.message 
-      });
+    console.error('Payment processing error:', error);
+    res.status(500).json({ 
+      message: 'Failed to process payment', 
+      error: error.message 
+    });
   }
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  if (err && err.code === 'EBADCSRFTOKEN') {
-    res.status(403).json({
-      success: false,
-      message: 'Session expired. Please refresh and try again.'
-    });
-  } else if (err && err.message && err.message.includes('session')) {
-    console.error('Session error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Session error. Please log in again.',
-      redirect: '/login'
-    });
-  } else {
-    next(err);
-  }
+  console.error('Unhandled error:', err);
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error',
+    error: isProduction ? undefined : err.message
+  });
 });
 
 // Start the server
