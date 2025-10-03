@@ -16,17 +16,17 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://adshark00:0KKX2YSB
 const SESSION_SECRET = process.env.SESSION_SECRET || 'your-secret-key';
 const isProduction = process.env.NODE_ENV === 'production';
 const BASE_DOMAIN = isProduction 
-  ? 'https://adsvertisernew-1.onrender.com' 
+  ? 'https://adsvertiser.com'  // Change to your domain
   : 'http://localhost:3002';
-
 // Simple CORS configuration
 app.use(cors({
   origin: function (origin, callback) {
     const allowedOrigins = [
-      'https://adsvertisernew-1.onrender.com',
-      'http://localhost:3002',
-      'http://127.0.0.1:3002'
-    ];
+  'https://adsvertiser.com',
+  'http://adsvertiser.com',
+  'http://localhost:3002',
+  'http://127.0.0.1:3002'
+];
     
     if (!origin) return callback(null, true);
     
