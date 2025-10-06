@@ -5,7 +5,6 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Terms of Service - Adsvertiser</title>
     
-    <!-- Standard imports from your template -->
     <link href="assets/img/AdShark.png" rel="icon">
     <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,98 +19,126 @@
     <link href="assets/css/edited.css" rel="stylesheet">
 
     <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #fff;
+        }
         
         .terms-section {
-            padding: 60px 0;
-            background: #f8f9fa;
+            padding: 100px 0 60px;
+            background: #fff;
         }
         
         .terms-content {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 60px;
+            max-width: 100%;
+            padding: 40px 20px;
             background: #fff;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
         
         .terms-header {
-            text-align: center;
-            margin-bottom: 50px;
-            padding-bottom: 30px;
-            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 30px;
         }
         
         .terms-header h1 {
-            color: #334257;
-            font-size: 2.5rem;
+            color: #000;
+            font-size: 2rem;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
         
         .terms-header p {
-            color: #8bbcd4;
-            font-size: 1.1rem;
-        }
-        
-        .terms-content h2 {
-            color: #334257;
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin: 35px 0 20px 0;
-            display: flex;
-            align-items: center;
-        }
-        
-        .terms-content h2::before {
-            content: "";
-            display: inline-block;
-            width: 5px;
-            height: 25px;
-            background: #8bbcd4;
-            margin-right: 15px;
-            border-radius: 3px;
-        }
-        
-        .terms-content p {
             color: #666;
-            line-height: 1.8;
-            margin-bottom: 0px;
-            font-size: 1rem;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
         }
         
-        .terms-content ul {
-            padding-left: 20px;
-            margin-bottom: 20px;
+        .intro-text {
+            background: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 3px solid #333;
         }
         
-        .terms-content ul li {
-            color: #666;
-            margin-bottom: 10px;
+        .intro-text p {
+            margin-bottom: 15px;
+            font-size: 0.9rem;
             line-height: 1.6;
         }
         
-        .terms-nav {
+        .terms-content h2 {
+            color: #000;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 30px 0 15px 0;
+        }
+        
+        .terms-content h3 {
+            color: #000;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 20px 0 10px 0;
+        }
+        
+        .terms-content p {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+        
+        .terms-content ul {
+            padding-left: 30px;
+            margin-bottom: 15px;
+        }
+        
+        .terms-content ul li {
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .definition-term {
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .subsection {
+            margin-left: 20px;
+        }
+        
+        .toc-nav {
             position: sticky;
             top: 100px;
             background: #fff;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
         }
         
-        .terms-nav a {
+        .toc-nav h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 15px;
+            margin-top: 0;
+        }
+        
+        .toc-nav a {
             display: block;
-            padding: 8px 15px;
+            padding: 6px 0;
             color: #666;
             text-decoration: none;
-            border-radius: 5px;
-            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            transition: color 0.2s;
         }
         
-        .terms-nav a:hover {
-            background: #f8f9fa;
-            color: #8bbcd4;
+        .toc-nav a:hover {
+            color: #000;
+        }
+        
+        .toc-nav a.active {
+            color: #000;
+            font-weight: 600;
         }
         
         @media (max-width: 768px) {
@@ -120,29 +147,71 @@
             }
             
             .terms-content {
-                padding: 30px;
+                padding: 20px;
             }
             
             .terms-header h1 {
-                font-size: 2rem;
+                font-size: 1.75rem;
             }
             
-            .terms-nav {
+            .toc-nav {
                 display: none;
             }
         }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Smooth scrolling for TOC links
+            const tocLinks = document.querySelectorAll('.toc-nav a');
+            
+            tocLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+                    
+                    if (targetSection) {
+                        const headerOffset = 100;
+                        const elementPosition = targetSection.offsetTop;
+                        const offsetPosition = elementPosition - headerOffset;
+                        
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+            
+            // Highlight active section on scroll
+            window.addEventListener('scroll', function() {
+                let current = '';
+                const sections = document.querySelectorAll('section[id]');
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= (sectionTop - 150)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                tocLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
 </head>
 
 <body>
-    <!-- Header (your existing header code) -->
     <header id="header" class="header d-flex align-items-center fixed-top">
         <div class="container-fluid container-xl position-relative d-flex align-items-center">
-    
           <a href="index.html" class="logo d-flex align-items-center me-auto">
-            <!-- Uncomment the line below if you also wish to use an image logo -->
             <img src="./Adshark.png" alt="">
-            <h1 class="sitename">Adsvertiser</h1>
           </a>
     
           <nav id="navmenu" class="navmenu">
@@ -157,82 +226,404 @@
           </nav>
     
           <a class="btn-getstarted flex-md-shrink-0" href="login.html?mode=signin">Sign In</a>
-    
         </div>
-      </header>
+    </header>
 
     <section class="terms-section">
         <div class="container">
             <div class="row">
                 <div class="col-lg-3">
-                    <div class="terms-nav">
-                        <a href="#acceptance">1. Acceptance of Terms</a>
-                        <a href="#services">2. Description of Services</a>
-                        <a href="#accounts">3. User Accounts</a>
-                        <a href="#obligations">4. User Obligations</a>
-                        <a href="#payment">5. Payment Terms</a>
-                        <a href="#ip">6. Intellectual Property</a>
-                        <a href="#privacy">7. Privacy</a>
-                        <a href="#liability">8. Limitation of Liability</a>
-                        <a href="#changes">9. Changes to Terms</a>
-                        <a href="#contact">10. Contact Information</a>
+                    <div class="toc-nav">
+                        <h3>TABLE OF CONTENTS</h3>
+                        <a href="#parties">1. Parties to the Agreement</a>
+                        <a href="#definitions">2. Definitions and Interpretation</a>
+                        <a href="#services">3. Services</a>
+                        <a href="#advertising">4. Advertising</a>
+                        <a href="#payments">5. Payments</a>
+                        <a href="#fees">6. Fees and Charges</a>
+                        <a href="#representations">7. Your Representations and Warranties</a>
+                        <a href="#termination">8. Suspension or Termination</a>
+                        <a href="#intellectual-property">9. Intellectual Property</a>
+                        <a href="#indemnity">10. Indemnity</a>
+                        <a href="#disclaimers">11. Disclaimers</a>
+                        <a href="#liability">12. Limitation of Liability</a>
+                        <a href="#taxation">13. Taxation</a>
+                        <a href="#force-majeure">14. Force Majeure</a>
+                        <a href="#security">15. Security</a>
+                        <a href="#miscellaneous">16. Miscellaneous</a>
                     </div>
                 </div>
                 <div class="col-lg-9">
                     <div class="terms-content">
                         <div class="terms-header">
-                            <h1>Terms of Service</h1>
-                            <p>Last updated: September 30, 2025</p>
+                            <h1>ADVERTISERS TERMS OF SERVICE</h1>
+                            <p>Last updated: September 30, 2024</p>
                         </div>
                         
-                        <section id="acceptance">
-                            <h2>1. Acceptance of Terms</h2>
-                            <p>By accessing and using Adsvertiser's services ("Services"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use our Services.</p>
+                        <div class="intro-text">
+                            <p><strong>PLEASE READ THESE TERMS OF SERVICE CAREFULLY. BY CLICKING TO ACCEPT WHEN SIGNING UP OR WHEN REQUESTED, YOUR USE OF OUR SERVICES IS SUBJECT TO THESE TERMS, OUR PRIVACY POLICY, COOKIES POLICY (TOGETHER THE "TERMS" OR THE "AGREEMENT"). YOU AGREE TO BE BOUND BY THE AGREEMENT AND ALL TERMS INCORPORATED BY REFERENCE. IF YOU DO NOT UNDERSTAND OR DO NOT ACCEPT THE AGREEMENT OR ANY PART THEREOF, THEN YOU CANNOT USE OUR SERVICES.</strong></p>
+                            
+                            <p>These are the Terms and Conditions that apply to the use, by Advertisers, of the various services available on the Platform.</p>
+                        </div>
+
+                        <section id="parties">
+                            <h2>1. Parties to the Agreement</h2>
+                            <p>Ad Market Limited ("Adsvertiser"), together with its subsidiaries and/or affiliates and/or connected companies, collectively referred to as "Adsvertiser" and/or "We" and/or "Us".</p>
+                            
+                            <p>References in these Terms to "your" or "you" are to the person/entity who accepts these Terms and agrees to create accounts and use the Services as set out in and under these Terms. You and Adsvertiser shall together be referred to as the "Parties" and references to a "Party" shall be to the relevant party as the context requires.</p>
+                        </section>
+
+                        <section id="definitions">
+                            <h2>2. Definitions and Interpretation</h2>
+                            <h3>2.1. The following words and expressions used in these Terms shall have the following meaning, unless they are inconsistent with the context:</h3>
+                            
+                            <p><span class="definition-term">"Account"</span> means an account created by an Advertiser on the Platform in order to use the Services.</p>
+                            
+                            <p><span class="definition-term">"Advertiser"</span> means a person or entity that creates an account on the Platform as an advertiser, uses the Services, and agrees to follow these Terms.</p>
+                            
+                            <p><span class="definition-term">"Additional Payment Terms"</span> means an additional agreement or an appendix to this Agreement defining payment and invoicing terms other or further, than as defined in this Agreement.</p>
+                            
+                            <p><span class="definition-term">"Advertiser's Website"</span> means the website that a user is re-directed to after interaction with Advertising Material Implemented on a Publisher's Website.</p>
+                            
+                            <p><span class="definition-term">"Advertising Campaign"</span> means an organized course of action to promote a product or service.</p>
+                            
+                            <p><span class="definition-term">"Advertising Material"</span> means the text, link, graphics, logos, designs, trademarks and copyrights for any type of advertising including, but not limited to, banners, text ads, landing pages, video ads, sites, pop-ups and pop-unders created by an Advertiser and any other advertising materials containing a hyperlink, which when implemented in a Publisher's Website and clicked on by a web user, send the web user to the Advertiser's Website.</p>
+                            
+                            <p><span class="definition-term">"Applicable Law"</span> means any applicable law or regulation or any other laws, rules or regulations of any territories or jurisdictions (as the case may be) and as may be amended from time to time.</p>
+                            
+                            <p><span class="definition-term">"Business Days"</span> means a day (other than a Saturday, Sunday or public holiday) where banks are generally open for business.</p>
+                            
+                            <p><span class="definition-term">"Confidential Information"</span> means the terms of this Agreement, all matters relating or connected to its performance and all information or data of a Party, which is disclosed or otherwise comes into the other Party's knowledge or possession directly or indirectly as a result of this Agreement and being of a confidential nature.</p>
+                            
+                            <p><span class="definition-term">"Charges"</span> means the sums payable for the Services, as set out clause 5.2.</p>
+                            
+                            <p><span class="definition-term">"Dashboard"</span> means the information management tool that visually tracks, analyses and displays key performance indicators, including but not limited to the number of advertising impressions, clicks and actions, which is available to Advertisers on the Platform.</p>
+                            
+                            <p><span class="definition-term">"Implementation"</span> means incorporation or integration of the Advertising Materials into the Publisher's Website which enables web-users to view Advertising Materials or access any of the Advertiser's Websites by clicking on the relevant Advertising Material as incorporated into the Publisher's Website and "Implement", "Implementing" and "Implemented" shall be construed accordingly.</p>
+                            
+                            <p><span class="definition-term">"Inappropriate Content"</span> means but is not limited to content which promotes violence, discrimination, illegal activities, aimed at political ends, both party political advertising and political advocacy by non-partisan groups, infringes the Intellectual Property Rights of any person, involves malware, viruses or phishing, or violates advertising regulations or rules of conduct, such as but not limited to advertising for or in connection with medicinal products for the purpose of the treatment, prevention or diagnosis of any disease.</p>
+                            
+                            <p><span class="definition-term">"Intellectual Property Rights"</span> means:</p>
+                            <ul>
+                                <li>(i) patents, inventions, designs, copyright and related rights, database rights, trade marks and related good will, trade names (whether registered or unregistered), and rights to apply for registration;</li>
+                                <li>(ii) proprietary rights in domain names;</li>
+                                <li>(iii) knowhow and Confidential Information;</li>
+                                <li>(iv) applications, extensions and renewals in relation to any of these rights; and</li>
+                                <li>(v) all other rights of a similar nature or having an equivalent effect anywhere in the world.</li>
+                            </ul>
+                            
+                            <p><span class="definition-term">"Misleading Advertising"</span> means any advertising which in any way, including its presentation, deceives or is likely to deceive the persons to whom it is addressed or whom it reaches and which, by reason of its deceptive nature, is likely to affect their economic behaviour or which, for those reasons, injures or is likely to injure a competitor.</p>
+                            
+                            <p><span class="definition-term">"Personal Data"</span> shall have the meaning as prescribed under applicable data protection and privacy laws and regulations, as may be amended from time to time.</p>
+                            
+                            <p><span class="definition-term">"Platform"</span> means the platform created by Adsvertiser, which is available through the Website, for Advertisers and Publishers.</p>
+                            
+                            <p><span class="definition-term">"Publisher"</span> means a person or entity that creates an account on the Platform as a publisher, and who is responsible for the distribution of Advertising Material on Publisher's website.</p>
+                            
+                            <p><span class="definition-term">"Publisher's Websites"</span> means the web sites or applications which are owned or operated or controlled by a Publisher or are contractually part of a Publisher's syndication network in order to Implement Advertising Materials.</p>
+                            
+                            <p><span class="definition-term">"Services"</span> means the services provided by the Publisher, which include the following:</p>
+                            <ul>
+                                <li>i) distributing Advertising Material on Publisher's Website; and;</li>
+                                <li>ii) any other services which are incidental to the above services.</li>
+                            </ul>
+                            
+                            <p><span class="definition-term">"Website"</span> means the domain located at www.Adsvertiser.com, or any other domain(s) that Adsvertiser may designate in the future for the purpose of delivering the Services.</p>
+                            
+                            <h3>2.2. In these Terms unless otherwise specified:</h3>
+                            <ul>
+                                <li>references to clauses are to clauses of these Terms;</li>
+                                <li>reference to a sub-clause is to a sub-clause of the clause in which such reference is made, to a paragraph is to a paragraph of the sub-clause in which such reference is made and to a sub-paragraph is to a sub-paragraph of the paragraph in which such reference is made;</li>
+                                <li>a reference to any statute or statutory provision shall be construed as a reference to the same as it may have been, or may from time to time be, amended, modified, or re-enacted after the date of these Terms;</li>
+                                <li>references to in writing shall include any models of reproducing words in a legible and non-transitory form;</li>
+                                <li>references to the plural or singular shall be interchangeable as circumstances require; and</li>
+                                <li>headings are for convenience only and do not affect the interpretation of these Terms.</li>
+                            </ul>
                         </section>
 
                         <section id="services">
-                            <h2>2. Description of Services</h2>
-                            <p>Adsvertiser provides digital advertising and marketing services, including but not limited to campaign management, analytics, and reporting tools. We reserve the right to modify, suspend, or discontinue any part of our Services at any time.</p>
+                            <h2>3. Services</h2>
+                            <p><strong>3.1.</strong> In order to become an Advertiser and use the Services you must register and create an Account with us.</p>
+                            
+                            <p><strong>3.2.</strong> You agree to provide accurate and complete information about yourself during the registration process and you also agree not to impersonate any person or entity, and not to hide your identity from Adsvertiser for any reason whatsoever. If you register as a commercial entity, you declare that you have the required authority to bind that entity to this Agreement. When you open an Account, Adsvertiser may ask that you provide certain documents to identify yourself and to verify the information you have submitted to us upon registration, such as identification card or a passport, a utility bill, a bank statement or any other document proving your identity issued by a governmental body and/or connection with the entity, as the case may be. Adsvertiser reserves the right to refuse or reject a registration, at our own discretion.</p>
+                            
+                            <p><strong>3.3.</strong> You are only allowed to register to become an Advertiser and/or use the Services if you are eligible in accordance with the laws of your jurisdiction or under the laws of any other jurisdiction to which you may be subject. Adsvertiser has no obligation or capability to, and therefore does not, verify whether you are eligible to use any of the Services and we shall not bear any responsibility for your use of the Services.</p>
+                            
+                            <p><strong>3.4.</strong> Use of the Services provided by Adsvertiser is strictly limited to individuals who are 18 years of age or older, legally capable of entering into a binding contract under applicable law, and not otherwise barred from such use. By accessing or using our Services, you represent and warrant that you meet the minimum age requirement and possess the capacity to form legally binding agreements. Adsvertiser reserves the right to request age verification at any time and to suspend or terminate your account(s) and/or the Services provided by Adsvertiser if it is determined that you have misrepresented your eligibility. In such an event, Adsvertiser shall bear no liability against you or obligation to compensate you. Furthermore, you acknowledge and agree that any violation of these age restrictions or other applicable laws may result in legal action against you, if necessary.</p>
+                            
+                            <p><strong>3.5.</strong> We may directly or indirectly (through third parties), make any inquiries as we consider necessary to check the relevance and accuracy of the information provided for verification purposes.</p>
+                            
+                            <p><strong>3.6.</strong> By becoming an Advertiser and/or using any of the Services you agree to be bound by these Terms which represent a binding legal contract between the Parties. You hereby agree to the use of electronic communication in order to enter into contracts, place orders and other records and to the electronic delivery of notices, policies and records of transactions initiated or completed through our application and platforms. Furthermore, you hereby waive any rights or requirements under any laws or regulations in any jurisdiction which require original (non-electronic) signature or delivery or retention of non-electronic records, to the extent permitted under applicable mandatory law.</p>
+                            
+                            <p><strong>3.7.</strong> Advertisers are not allowed to hold more than one account with Adsvertiser for any reason. Adsvertiser shall have the right in its sole and absolute discretion to permit you to register more than one Advertiser account. You will need to contact Adsvertiser support to request such permission.</p>
                         </section>
 
-                        <section id="accounts">
-                            <h2>3. User Accounts</h2>
-                            <p>To access certain features of our Services, you must create an account. You are responsible for maintaining the confidentiality of your account information and for all activities that occur under your account.</p>
+                        <section id="advertising">
+                            <h2>4. Advertising</h2>
+                            <p><strong>4.1.</strong> Advertisers are able to use the Services in order to advertise their goods and services by uploading Advertising Materials on the Platform.</p>
+                            
+                            <p><strong>4.2.</strong> By uploading Advertising Materials, you agree that Adsvertiser can place and deliver the Advertising Material to Publishers in order to incorporate or embed the Advertising Material onto the Publisher's website. In this regard, you grant Adsvertiser an unlimited, non-exclusive, fully transferable, sub-licensable, worldwide, royalty-free, fully paid up right and license to use, reproduce, modify, create derivative works from, distribute, perform, transmit and display the Advertising Materials in any format, layout or size on the Platform and to the Publisher's website.</p>
+                            
+                            <p><strong>4.3.</strong> You are responsible for ensuring that any Advertising Material does not feature any Inappropriate Content.</p>
+                            
+                            <p><strong>4.4.</strong> You hereby expressly agree that any Advertising Material does not and shall not infringe any third-party rights or breach Applicable Laws (including but not limited to copyright and trademark laws and general rights to privacy). You also agree that any Advertising Material is not and shall not be offensive or defamatory or unlawful in any other way. Adsvertiser shall have the right, but not the obligation to:</p>
+                            <ul>
+                                <li>review and approve any Advertising Material uploaded by an Advertiser on the Platform. In this regard, Adsvertiser shall have the right in its sole and absolute discretion to refuse to make available any Advertising Material which it either disapproves of, or is deemed to be in breach of these Terms; and</li>
+                                <li>remove any Advertising Material which Adsvertiser, acting in its sole and absolute discretion, either disapproves of, or is deemed to be in breach of these Terms.</li>
+                            </ul>
                         </section>
 
-                        <section id="obligations">
-                            <h2>4. User Obligations</h2>
-                            <p>You agree to use our Services in compliance with all applicable laws and regulations. You will not use our Services for any illegal or unauthorized purpose.</p>
+                        <section id="payments">
+                            <h2>5. Payments</h2>
+                            <h3>Pre-Pay</h3>
+                            
+                            <p><strong>5.1.</strong> Advertisers must initially fund their Account with at least $100.00 (one hundred US Dollars) to activate their Advertising Campaign(s). If the balance in your Account is reduced to nil, your Account shall be put on hold, and all Advertising Campaigns shall be paused, until you deposit further funds in your Account. As soon as you deposit further funds in your Account, the Account shall be reactivated, and all Advertising Campaigns previously paused due to insufficient funds shall be restarted/reactivated.</p>
+                            
+                            <p><strong>5.2.</strong> You will be able to fund your account by depositing funds into your Account (a "Deposit"). A Deposit must be made from a bank account, payment services provider or credit card registered in your name or in the name of a person who is duly authorised by you to make a Deposit, or in such other manner as we may agree from time to time. You hereby authorise Adsvertiser to communicate with your bank to provide or obtain information required by Adsvertiser or your bank in connection with providing the Services. You acknowledge and agree that Adsvertiser may withhold commissions associated with the payment method of your choice.</p>
+                            
+                            <p><strong>5.3.</strong> A Deposit can be made through the Platform by following the relevant steps. Deposits may only be made in currencies available on the Platform and through the payment methods listed therein. An order for a Deposit shall be credited to your Account, within three (3) Business Days of clearing, in our bank account.</p>
+                            
+                            <p><strong>5.4.</strong> Invoice information form must be filled out before using certain payment methods. You expressly accept to be solely responsible for providing accurate personal data which is fully and legally compliant for the purposes of invoicing and taxation under our Terms, our Privacy Policy and/or Applicable Laws.</p>
+                            
+                            <p><strong>5.5.</strong> Before you are able to make a Deposit, or at any time after registering your payment method, we may (in our sole and absolute discretion):</p>
+                            <ul>
+                                <li>request you to provide additional information and documentation for the purpose of complying with any "know your client" or similar obligations to which we may be subject, in order to, among others, obtain consent to process your credit card; and/or</li>
+                                <li>determine that it is necessary to obtain certain other information about you in order to comply with Applicable Laws and Regulations and/or our Privacy Policy in connection with using your payment method to make a Deposit.</li>
+                            </ul>
+                            
+                            <p><strong>5.6.</strong> You acknowledge and accept that we may refuse or reject any Deposit until you provide all information and documentation that we may request under this clause 5.</p>
+                            
+                            <p><strong>5.7.</strong> You undertake, as soon as reasonably practicable, promptly notify Adsvertiser if:</p>
+                            <ul>
+                                <li>your credit card is lost or stolen (regardless of whether you have already notified your credit card provider); or</li>
+                                <li>there are any changes to your credit card details, including but not limited to, your billing address, card number and expiration date; or</li>
+                                <li>there are any other changes to your credit card account which may affect the ability of Adsvertiser to process payments on your behalf.</li>
+                            </ul>
+                            
+                            <p><strong>5.8.</strong> If, for whatever reason, there is a chargeback of any payment made to us using your credit card, Adsvertiser shall have the right in its sole and absolute discretion to suspend or terminate your Account in accordance with clause 8.1. In the event that your Account is suspended or terminated in accordance with this clause, the provisions of clauses 8.2 to 8.6 shall apply.</p>
+                            
+                            <h3>Refund Policy</h3>
+                            
+                            <p><strong>5.9.</strong> You can request a refund of the balance remaining in your Account, which shall be shown on your Dashboard ("Available Balance"), by email, addressed to info@Adsvertiser.com ("Refund Request"). A Refund Request must include details of the reasons for the refund.</p>
+                            
+                            <p><strong>5.10.</strong> A Refund Request may only be made within twelve (12) months following the date of your last invoice. You agree that you shall not be entitled to a refund if a Refund Request is made after this date. Further, you agree that you shall not be entitled to a refund, even if a Refund Request is made before this date, if you have, at any time, breached any of these Terms.</p>
+                            
+                            <p><strong>5.11.</strong> Upon receiving a Refund Request, subject to clauses 5.10 and 8.5, Adsvertiser shall, within 30 Business Days, process the refund which is referred to in the Refund Request. All refunds shall be paid to the same account, and in the same currency, in which you made a Deposit. Adsvertiser shall take all necessary steps to verify such account before processing a refund.</p>
+                            
+                            <p><strong>5.12.</strong> Refunds may be delayed or unavailable as a result of bank issues, Adsvertiser downtime or as Adsvertiser may determine in its sole discretion is necessary to investigate fraud or illegal activity.</p>
                         </section>
 
-                        <section id="payment">
-                            <h2>5. Payment Terms</h2>
-                            <p>Some of our Services require payment. You agree to pay all fees and charges associated with your use of these Services according to the prices and terms in effect when the charges were incurred.</p>
+                        <section id="fees">
+                            <h2>6. Fees and Charges</h2>
+                            <p><strong>6.1.</strong> In consideration of the provision of the Services by Adsvertiser, the Advertiser shall pay the charges, calculated as follows: An Advertiser may choose between any of the following three pricing models:</p>
+                            <ul>
+                                <li>Cost-Per-Mille – cost per 1,000 impressions ("CPM");</li>
+                                <li>Cost-Per-Action – cost per 1 conversion ("CPA");</li>
+                                <li>Cost per click ("CPC").</li>
+                            </ul>
+                            <p>Each pricing model shall be referred to as a "Charge Event".</p>
+                            
+                            <p>An Advertiser shall also set the price for the Advertising Material (the "Price"). The charge shall be calculated having regard to the applicable Charge Event and Price.</p>
+                            
+                            <p>For example, if an Advertiser has opted for CPM and has set the price at $1.00, the Advertiser shall be charged a fee of $1.00 for every 1,000 impressions.</p>
+                            
+                            <p><strong>6.2.</strong> By using Cost-Per-Action (CPA) pricing model using Self-Service Platform you agree to pay for the impressions delivered during the test period by using Cost-Per-Mille (CPM) model. The charge for the traffic delivered within the test period shall be calculated based solely on the number of impressions and CPM rates, determined by Adsvertiser. Test period is based on campaign's test budget and traffic delivery speed.</p>
+                            
+                            <p><strong>6.3.</strong> By using the Services you agree to pay the relevant Charges. You acknowledge that the payment obligations hereunder are based solely on the number of impressions/clicks/actions, as the case may be and as determined solely by Adsvertiser, and not on your ability to convert impressions/clicks/actions to sales or any other criteria. You shall be able to view the number of impressions/clicks/actions via your Dashboard.</p>
+                            
+                            <p><strong>6.4.</strong> Upon completion of a Charge Event, you agree that the applicable Charge shall be automatically deducted from your Available Balance.</p>
+                            
+                            <h3>Post-Pay</h3>
+                            
+                            <p><strong>6.5.</strong> Adsvertiser may, in its sole and absolute discretion, offer you post-payment terms within your Account. The following sub-clauses of this clause 6 shall apply to those Advertisers who are on Post-Pay terms.</p>
+                            
+                            <p><strong>6.6.</strong> In consideration of the provision of the Services, unless otherwise specified in the Additional Payment Terms, the Advertiser shall be on a credit payment terms "Monthly net0" with Adsvertiser; of which the billing period is on a monthly basis beginning on the first day of the month and ending on the last day of the month; and which payment shall be made within 3 business days after the last day of the billing period.</p>
+                            
+                            <p><strong>6.7.</strong> Adsvertiser shall invoice you on a monthly basis for the charges provided within the billing period in accordance with Clauses 6.5 and 6.6, unless otherwise specified in the Additional Payment Terms. Payment shall be made to the account stated on the invoice. Time for payment is of the essence.</p>
+                            
+                            <p><strong>6.8.</strong> The Advertiser shall pay all amounts stated in invoices in full without any set-off, counterclaim, deduction or withholding (except for any deduction or withholding required by law). If any such withholding or deduction is required, the Advertiser shall, when making the payment to which the withholding or deduction relates, pay to Adsvertiser such additional amount as will ensure that Adsvertiser receives the same total amount that it would have received if no such withholding or deduction had been required. Adsvertiser may at any time, without limiting any other rights or remedies it may have, set off any amount owed to it by the Advertiser against any amount payable by Adsvertiser to the Advertiser.</p>
                         </section>
 
-                        <section id="ip">
-                            <h2>6. Intellectual Property</h2>
-                            <p>All content, features, and functionality of our Services are owned by Adsvertiser and are protected by international copyright, trademark, and other intellectual property laws.</p>
+                        <section id="representations">
+                            <h2>7. Your Representations and Warranties</h2>
+                            <p>By becoming an Advertiser and/or by using the Services you hereby agree, represent and warrant that:</p>
+                            <ul>
+                                <li>you have read, understood and accepted these Terms;</li>
+                                <li>you have the necessary authority and consent to accept these Terms, to enter into a binding agreement with Adsvertiser and to perform the obligations set out herein;</li>
+                                <li>if you are an individual, you have sufficient legal capacity (in your jurisdiction) to accept these Terms and to enter into a legally binding agreement with Adsvertiser on the terms set out herein;</li>
+                                <li>all Advertising Materials comply with Applicable Laws;</li>
+                                <li>you have all necessary permissions, authorizations, consents, licenses and any other requisite approvals under Applicable Laws to promote the content of any Advertising Material;</li>
+                                <li>you shall not use the Services to advertise any goods or services that are illegal, such as but not limited to:
+                                    <ul>
+                                        <li>i. human trafficking;</li>
+                                        <li>ii. money laundering, terrorist financing, proliferation of weapons of mass destruction;</li>
+                                        <li>iii. pornography, of any kind, adult or mature content;</li>
+                                        <li>iv. any goods or services that are illegal or the promotion, offer or marketing of which is illegal or that are offered in connection with illegal content, depict children or minors in sexual postures, depict means of propaganda or signs of unconditional organizations glorifying war or violating human dignity;</li>
+                                        <li>v. any goods or services, promotion, offer or marketing of which would violate copyrights, trademarks, industrial property rights or other rights of any person;</li>
+                                        <li>vi. archaeological findings;</li>
+                                        <li>vii. drugs, narcotics or hallucinogens;</li>
+                                        <li>viii. weapons of any kind;</li>
+                                        <li>ix. illegal gambling services;</li>
+                                        <li>x. Ponzi, pyramid or any other "get rich quick" schemes;</li>
+                                        <li>xi. goods that are subject to any trade embargo;</li>
+                                        <li>xii. media that is harmful to minors and violate laws and, in particular, the provision in respect of the protection of minors;</li>
+                                        <li>xiii. body parts or human remains;</li>
+                                        <li>xiv. protected animals or protected plants;</li>
+                                        <li>xv. tech support services;</li>
+                                        <li>xvi. pages that include browser/tab lockers, back button hijacks, hidden redirects or parent page redirects; or</li>
+                                        <li>xvii. phishing or hacking of any kind;</li>
+                                        <li>xviii. any other illegal goods, services or transactions.</li>
+                                    </ul>
+                                </li>
+                                <li>you are the owner or licensed to use the Advertising Materials;</li>
+                                <li>Advertising Materials shall not constitute Misleading Advertising;</li>
+                                <li>you shall not interfere with or attempt to interrupt the proper operation of the Platform or the Services through the use of any virus, device, information collection or transmission mechanism, software or routine, or access or attempt to gain access to any data, files, or passwords related to the Services through hacking, passwords or data mining, or any other means;</li>
+                                <li>using the Services is not unlawful or prohibited under the laws of your jurisdiction or under the laws of any other jurisdiction to which you may be subject and your use of the Services shall be in full compliance with applicable laws (including, but not limited to, in compliance with any tax obligations to which you may be subject in any relevant jurisdiction);</li>
+                                <li>you will comply with any applicable tax obligations in your jurisdiction arising from your use of the Services;</li>
+                                <li>you will monitor all and any changes to your Account and take all steps to maintain and ensure the confidentiality of your Account's credentials, including, but not limited to passwords, emails and/or usernames;</li>
+                                <li>you will immediately inform of any unauthorized use of your Account or password, or any other breach of security by email addressed to info@Adsvertiser.com;</li>
+                                <li>you are responsible for any and all damages caused, and all liability actions brought against Adsvertiser for any breach or infringement of these Terms or of any third-party rights or violation of any Applicable Laws;</li>
+                                <li>nothing in these Terms excludes or limits the liability of the Advertiser for fraud, death or personal injury caused by their negligence, breach of the Terms implied by operation of law or any other liability which may not be limited or excluded by law;</li>
+                                <li>any errors or malfunctions caused by or otherwise related to the Services including your own failure to properly maintain or use your Account may result in the loss of any Advertising Materials or funds held in your Account;</li>
+                                <li>you acknowledge and agree that Adsvertiser may, where applicable, make payments to third parties that help initiate, conclude or maintain a business relationship between Adsvertiser (or Adsvertiser's affiliates) and its clients. These payments may include rebates, commission, widened spreads, and profit sharing;</li>
+                                <li>you will provide Adsvertiser with correct and relevant documents and personal information upon request. In case you provide counterfeit documents and false personal information, such behaviour will be interpreted as a fraudulent activity; and</li>
+                                <li>you are responsible for implementing all reasonable and appropriate measures for maintaining the confidentiality and security of your Account name, user ID, passwords, personal identification and mobile unlock codes that you use to access the Platform.</li>
+                            </ul>
                         </section>
 
-                        <section id="privacy">
-                            <h2>7. Privacy</h2>
-                            <p>Your use of our Services is also governed by our Privacy Policy. Please review our Privacy Policy to understand our practices.</p>
+                        <section id="termination">
+                            <h2>8. Suspension or Termination</h2>
+                            <h3>For cause</h3>
+                            
+                            <p><strong>8.1.</strong> We reserve the right to suspend or terminate your Account if we have reason to believe or suspect that you are in breach of these Terms or other legal obligation (including fraudulent activity or where we feel that Advertising Materials includes Inappropriate Content or Misleading Advertising) without prior notice or liability. We also reserve the right to change, suspend, or discontinue all or any part of the Services at any time without prior notice or liability.</p>
+                            
+                            <p><strong>8.2.</strong> Further, should your Account be suspended or terminated you will lose access to your Account and will not be able to undertake any transaction on the Platform.</p>
+                            
+                            <p><strong>8.3.</strong> You understand and agree that you may not be able to access any of the Services if your Account is suspended. In case the cause of the suspension is resolved by us, we shall restore your Account and restore your access to your Account. We shall not be held liable to you for any consequential or indirect loss (such as loss of profits or opportunity) you may incur as a result of your account being suspended.</p>
+                            
+                            <p><strong>8.4.</strong> We further reserve the right in our sole discretion, to refuse or cancel any of our Services, and/or refuse to issue a refund to any account for legitimate reasons, including, without limitation:</p>
+                            <ul>
+                                <li>8.4.1. if we have reason to believe that your activities or use of the Services may be illegal;</li>
+                                <li>8.4.2. if we may be harmed by any fiscal or pecuniary damage due to your activities on or through the Services; or</li>
+                                <li>8.4.3. if we consider that you have used the Services in a manner which contravenes any of these Terms at our sole discretion.</li>
+                            </ul>
+                            
+                            <p><strong>8.5.</strong> If we terminate your Account in accordance with clause 8.1, you surrender your right to receive payment of any balance standing to your credit in your Account and we shall be under no obligation to refund any balance held in your Account. In the event that any funds are owed to Adsvertiser upon termination of this Agreement in accordance with clause 8.1, Adsvertiser shall invoice you for the amount due, which shall be payable in full and in cleared funds within fifteen (15) Business Days of the date of the invoice.</p>
+                            
+                            <h3>Without cause</h3>
+                            
+                            <p><strong>8.6.</strong> Either Party may, without prejudice to any other rights they may have, by giving two (2) days notice in writing to the other Party, terminate this Agreement without cause.</p>
+                            
+                            <p><strong>8.7.</strong> On termination of this Agreement, in accordance with clause 8.6:</p>
+                            <ul>
+                                <li>8.7.1. you shall, within five (5) Business Days following the termination, pay to Adsvertiser all of Adsvertiser's outstanding unpaid invoices and, in respect of the Services performed but for which no invoice has been submitted, Adsvertiser may submit an invoice.</li>
+                                <li>8.7.2. if the Advertiser has opted for Pre-Pay payment terms, once all unpaid invoices have been settled in accordance with clause 8.7.1, subject to clause 8.4, you will be able to recover any such funds held in your Account. You will need to contact support info@Adsvertiser.com to request such withdrawal. In the event that any such funds held in your Account are not sufficient to settle such invoice, Adsvertiser shall invoice you for the remaining balance, which would be payable in full and in cleared funds within fifteen (15) Business Days of the date of the invoice.</li>
+                            </ul>
+                            
+                            <p><strong>8.8.</strong> Upon receiving a withdrawal request in accordance with clause 8.7.2, we shall transfer any funds held in your Account to the bank account, payment services provider or credit card registered in your name.</p>
+                        </section>
+
+                        <section id="intellectual-property">
+                            <h2>9. Intellectual Property</h2>
+                            <p><strong>9.1.</strong> In this clause 9, "Adsvertiser IP Rights" means in relation to Adsvertiser, the Platform and Services, all: (i) patents, inventions, designs, copyright and related rights, database rights, knowhow and confidential information, trademarks and related goodwill, trade names (whether registered or unregistered), and rights to apply for registration; (ii) all other rights of a similar nature or having an equivalent effect anywhere in the world which currently exist or are recognised in the future; and (iii) all applications, extensions and renewals in relation to any such rights.</p>
+                            
+                            <p><strong>9.2.</strong> Adsvertiser shall grant the Advertiser an unlimited, non-exclusive, worldwide, royalty-free, fully paid up right and license to use the Platform.</p>
+                            
+                            <p><strong>9.3.</strong> Except as expressly set out in these Terms, you are not entitled, for any purpose, to any Adsvertiser IP Rights. We shall at all times retain ownership, including all rights, title and interests in and to the Adsvertiser IP Rights and you understand and accept that by using the Services pursuant to these Terms you shall not:</p>
+                            <ul>
+                                <li>acquire or otherwise be entitled to any Adsvertiser IP Rights;</li>
+                                <li>make a claim in respect of any Adsvertiser IP Rights or any other equivalent rights; or</li>
+                                <li>use, attempt to use, copy, imitate or modify (whether in whole or in part) any Adsvertiser IP Rights, except with our prior written consent.</li>
+                            </ul>
+                        </section>
+
+                        <section id="indemnity">
+                            <h2>10. Indemnity</h2>
+                            <p><strong>10.1.</strong> To the fullest extent permitted by applicable law, you will indemnify, defend and hold harmless Adsvertiser and our respective past, present and future employees, officers, directors, contractors, consultants, equity holders, suppliers, vendors, service providers, parent companies, subsidiaries, affiliates, agents, representatives, predecessors, successors and assigns (the "Adsvertiser Parties") from and against any and all claims, demands, actions, damages, losses, costs and expenses (including reasonable professional and legal fees) that arise from or relate to:</p>
+                            <ul>
+                                <li>your use of the Services and/or Platform under these Terms;</li>
+                                <li>the performance or non-performance of your responsibilities or obligations under these Terms;</li>
+                                <li>your breach of any of the terms and conditions set out in these Terms; or</li>
+                                <li>your breach of any rights of any other person or entity.</li>
+                            </ul>
+                            
+                            <p><strong>10.2.</strong> Adsvertiser reserves the right to exercise sole control over the defense, at your sole cost and expense, of any claim subject to an indemnity set out in clause 10.1.</p>
+                            
+                            <p><strong>10.3.</strong> The indemnity set out in this clause 10 is in addition to, and not in lieu of, any other remedies that may be available to Adsvertiser under Applicable Law.</p>
+                        </section>
+
+                        <section id="disclaimers">
+                            <h2>11. Disclaimers</h2>
+                            <p>To the fullest extent permitted by applicable law and except as otherwise specified in writing by us:</p>
+                            <ul>
+                                <li>the Services and/or Platform are available on an "as is" and "as available" basis, without any warranties or representations of any kind, and we expressly disclaim all warranties and representations relating to the Services (whether express or implied), including, without limitation, any implied warranties of skill, care, diligence, quality and suitability, fitness for a particular purpose and non-infringement;</li>
+                                <li>we do not represent or warrant that the Services and/or Platform is reliable, current or defect-free, meets your expectations, or that any defects will be corrected;</li>
+                                <li>we provide no warranties or assurances with respect to the (i) placement or performance of any Advertising Materials; or (ii) the number of views/clicks or conversions;</li>
+                                <li>we are not responsible for the accuracy of the information present on any of the Services and the use of the Services is at your own discretion and risk; and</li>
+                                <li>Adsvertiser may from time to time carry out routine and emergency maintenance of the Website and/or Platform. Adsvertiser shall give the Advertiser as much notice of any routine or emergency maintenance as is reasonably possible and where reasonably possible shall endeavour to perform routine maintenance in such a way as to cause minimal disruption to the Advertiser.</li>
+                            </ul>
                         </section>
 
                         <section id="liability">
-                            <h2>8. Limitation of Liability</h2>
-                            <p>Adsvertiser shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use or inability to use the Services.</p>
+                            <h2>12. Limitation of Liability</h2>
+                            <p><strong>12.1.</strong> To the fullest extent permitted by Applicable Law, in no circumstances shall:</p>
+                            <ul>
+                                <li>Adsvertiser or any of the Adsvertiser Parties (where applicable) be liable for any direct, indirect, special, incidental or consequential loss of any kind (including, but not limited to, loss of revenue, income, business or profits, loss of contract or depletion of goodwill, loss of anticipated savings, loss of use or data, or damages for business interruption or any like loss) arising out of or in any way related to:
+                                    <ul>
+                                        <li>1) the use of Services and/or the Platform or otherwise related to these Terms, regardless of the cause of action, whether based in contract, tort (including negligence), breach of statutory duty, restitution or any other legal or equitable basis (even if Adsvertiser or any of the Adsvertiser Parties have been advised of the possibility of such losses and regardless of whether such losses were foreseeable);</li>
+                                        <li>2) delays or disruptions to the Services and/or Platform, including but not limited to, the unavailability or suspension of the Platform for the performance of routine or emergency maintenance;</li>
+                                        <li>3) viruses or other malicious software obtained by accessing the Services or Platform;</li>
+                                        <li>4) the content, actions, or inactions of third parties;</li>
+                                        <li>5) a suspension or other action taken with respect to your Account;</li>
+                                        <li>6) your need to modify practices, content, or behaviours, or your loss of or inability to do business, as a result of changes to these Terms;</li>
+                                        <li>7) illegal actions and operations of third persons performed using counterfeited and/or illegal documents or illegally received data;</li>
+                                    </ul>
+                                </li>
+                                <li>the aggregate liability of Adsvertiser and the Adsvertiser Parties (jointly), whether in contract, tort (including negligence), breach of statutory duty, restitution or any other legal or equitable basis, arising out of or relating to these Terms or the use of or inability to use the Services, exceed the total amount of fees received by us from you under this Agreement in the last three (3) months; and</li>
+                                <li>the limitations and exclusions of liability set out in clause 12.1 shall not limit or exclude liability for the gross negligence, fraud or intentional, willful or reckless misconduct of Adsvertiser, nor shall it limit or exclude any losses for which, as a matter of Applicable Law, it would be unlawful to limit or exclude liability.</li>
+                            </ul>
+                            
+                            <p><strong>12.2.</strong> We shall bear no liability for any damage or interruptions caused by any computer virus, spyware, or other malware that may affect your computer or other equipment, or any phishing, spoofing, or other attack. We advise the regular use of a reliable virus and malware screening and prevention software. If you question the authenticity of a communication purporting to be from Adsvertiser, you should login to your Account through the Website, not by clicking links contained in emails.</p>
                         </section>
 
-                        <section id="changes">
-                            <h2>9. Changes to Terms</h2>
-                            <p>We reserve the right to modify these Terms at any time. We will notify users of any material changes via email or through our Services.</p>
+                        <section id="taxation">
+                            <h2>13. Taxation</h2>
+                            <p><strong>13.1.</strong> You are solely responsible for determining whether any action or transaction contemplated by these Terms or related to the Services will give rise to any tax implications on your part.</p>
+                            
+                            <p><strong>13.2.</strong> You are also solely responsible for withholding, collecting, reporting, paying, settling and/or remitting any/or all other taxes to which you may become liable to the appropriate tax authorities in such jurisdiction(s) in which you may be liable to pay tax howsoever arising. Adsvertiser shall not be responsible for withholding, collecting, reporting, paying, settling and/or remitting any taxes (including, but not limited to, any income, capital gains, sales, value added or similar tax) which may arise from any action or transaction contemplated by these Terms or related to the Services.</p>
                         </section>
 
-                        <section id="contact">
-                            <h2>10. Contact Information</h2>
-                            <p>If you have any questions about these Terms, please contact us at info@Adsvertiser.com</p>
+                        <section id="force-majeure">
+                            <h2>14. Force Majeure</h2>
+                            <p>Neither Adsvertiser nor any member of the Adsvertiser Companies shall be liable or responsible to you, or be deemed to have breached these Terms, for any failure or delay in fulfilling or performing its obligations under these Terms, if and to the extent such failure or delay is caused by, results from or is otherwise connected to acts beyond its reasonable control, including, without limitation: (a) acts of God; (b) flood, fire, earthquake or explosion; (c) war, invasion, hostilities (whether war is declared or not), terrorist, hacking or cyber threats, attacks or acts, or other civil unrest; (d) any laws, statutes, ordinances, rules, regulations, judgments, injunctions, orders and decrees; or (e) action by any nation or government, state or other political subdivision thereof, any entity exercising legislative, regulatory, judicial or administrative functions of or pertaining to government, including, without limitation, any government authority, agency, department, board, commission or council.</p>
+                        </section>
+
+                        <section id="security">
+                            <h2>15. Security</h2>
+                            <p>You are solely responsible for maintaining the confidentiality of your Account, including, but not limited to a password, email, wallet address, balance and all activity including transactions made through your Account. Adsvertiser personnel will never ask you to disclose your password. Any message you receive or website you visit that asks for the password, other than on the Application, should be reported to Adsvertiser.</p>
+                            
+                            <p>It is advisable to change your password regularly (at least every three (3) to six (6) months) in order to reduce the risk of a security breach in relation to your Account. Adsvertiser also advises you not to choose a password that is easily guessed from information someone might know or gather about you or a password that has a meaning. You must never allow anyone to access your Account or watch you accessing your account.</p>
+                            
+                            <p>You must take reasonable care to ensure that your e-mail account(s) are secure and only accessed by you, as your e-mail address may be used to reset passwords or to communicate with you about the security of your Account.</p>
+                        </section>
+
+                        <section id="miscellaneous">
+                            <h2>16. Miscellaneous</h2>
+                            <p>We may amend these Terms from time to time, including where there are changes to the Services or as may be otherwise required by any laws or regulatory requirements to which we are subject. The changes will become effective on their Effective Date and must be accepted by the Account Holder, the first time the Account Holder uses the Services after the publishing of the revised Terms and shall apply on a going-forward basis with respect to any activity initiated after publishing. In the event that an Account Holder does not agree with any such modifications, the Account Holder's sole and exclusive remedy is to terminate the use of the Services and close the Account.</p>
+                            
+                            <p>If any term, clause or provision of these Terms is found to be illegal, void or unenforceable (in whole or in part), then such term, clause or provision shall be severable from these Terms without affecting the validity or enforceability of any remaining part of that term, clause or provision, or any other term, clause or provision of these Terms, which shall remain in full force and effect.</p>
+                            
+                            <p>These Terms constitute the entire agreement between the Parties in relation to its subject matter. These Terms replace and extinguish any and all prior agreements, draft agreements, arrangements, warranties, statements, assurances, representations and undertakings of any nature made by, or on behalf of the Parties, whether oral or written, public or private, in relation to that subject matter.</p>
+                            
+                            <p>You acknowledge that by accepting these Terms, you have not relied on any oral or written statements, warranties, assurances, representations or undertakings which were or may have been made by or on behalf of Adsvertiser in relation to the subject matter of these Terms at any time before your acceptance of them ("Pre-Contractual Statements"), other than those set out in these Terms. You hereby waive any and all rights and remedies which might otherwise be available in relation to such Pre-Contractual Statements.</p>
+                            
+                            <p>Nothing in these Terms shall be deemed to create any form of partnership, joint venture or any other similar relationship between you and Adsvertiser and/or other individuals or entities involved with the development and deployment of the Services.</p>
+                            
+                            <p>These Terms and any dispute or claim arising out of or in connection with their subject matter or formation (including non-contractual disputes and claims) shall be governed by and construed in accordance with applicable law.</p>
+                            
+                            <p>Any disputes arising from these Terms shall be resolved in accordance with the dispute resolution mechanisms set forth herein or as otherwise agreed by the Parties.</p>
+                            
+                            <p>You acknowledge that by accepting these Terms, you agree on using contact details provided in your personal account for any communication method.</p>
                         </section>
                     </div>
                 </div>
@@ -240,14 +631,12 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer id="footer" class="footer">
         <div class="container">
-            <div class="copyright">&copy; Copyright 2025 Adsvertiser - All Rights Reserved</div>
+            <div class="copyright">&copy; Copyright 2024 Adsvertiser - All Rights Reserved</div>
         </div>
     </footer>
 
-    <!-- Standard scripts -->
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/aos/aos.js"></script>
     <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
