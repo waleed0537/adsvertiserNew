@@ -141,26 +141,157 @@
             font-weight: 600;
         }
         
+        @media (max-width: 991px) {
+            .toc-nav {
+                position: static;
+                max-height: none;
+                margin-top: 30px;
+                margin-bottom: 30px;
+                border: 1px solid #e0e0e0;
+                border-radius: 5px;
+            }
+            
+            .toc-nav h3 {
+                background: #f8f9fa;
+                margin: 0;
+                padding: 15px 20px;
+                border-radius: 5px 5px 0 0;
+                cursor: pointer;
+            }
+            
+            .toc-nav h3:after {
+                content: " ▼";
+                float: right;
+                font-size: 0.8rem;
+            }
+            
+            .toc-nav.collapsed h3:after {
+                content: " ▶";
+            }
+            
+            .toc-links {
+                padding: 10px 20px;
+            }
+            
+            .toc-nav.collapsed .toc-links {
+                display: none;
+            }
+        }
+        
         @media (max-width: 768px) {
             .terms-section {
-                padding: 80px 20px;
+                padding: 80px 15px 40px;
             }
             
             .terms-content {
-                padding: 20px;
+                padding: 20px 15px;
             }
             
             .terms-header h1 {
-                font-size: 1.75rem;
+                font-size: 1.5rem;
             }
             
-            .toc-nav {
-                display: none;
+            .terms-header p {
+                font-size: 0.85rem;
+            }
+            
+            .intro-text {
+                padding: 15px;
+                font-size: 0.85rem;
+            }
+            
+            .intro-text p {
+                font-size: 0.85rem;
+            }
+            
+            .terms-content h2 {
+                font-size: 1.1rem;
+                margin: 25px 0 12px 0;
+            }
+            
+            .terms-content h3 {
+                font-size: 1rem;
+                margin: 18px 0 10px 0;
+            }
+            
+            .terms-content p {
+                font-size: 0.9rem;
+                margin-bottom: 12px;
+            }
+            
+            .terms-content ul {
+                padding-left: 25px;
+            }
+            
+            .terms-content ul li {
+                font-size: 0.9rem;
+                margin-bottom: 6px;
+            }
+            
+            .subsection {
+                margin-left: 15px;
+            }
+            
+            .definition-term {
+                display: block;
+                margin-bottom: 5px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .terms-section {
+                padding: 70px 10px 30px;
+            }
+            
+            .terms-content {
+                padding: 15px 10px;
+            }
+            
+            .terms-header h1 {
+                font-size: 1.3rem;
+            }
+            
+            .intro-text {
+                padding: 12px;
+            }
+            
+            .terms-content h2 {
+                font-size: 1rem;
+            }
+            
+            .terms-content h3 {
+                font-size: 0.95rem;
+            }
+            
+            .terms-content p,
+            .terms-content ul li {
+                font-size: 0.85rem;
             }
         }
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Mobile TOC toggle
+            const tocNav = document.querySelector('.toc-nav');
+            const tocTitle = document.querySelector('.toc-nav h3');
+            
+            if (tocTitle && window.innerWidth <= 991) {
+                tocNav.classList.add('collapsed');
+                
+                tocTitle.addEventListener('click', function() {
+                    tocNav.classList.toggle('collapsed');
+                });
+            }
+            
+            // Re-check on window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth <= 991 && !tocNav.classList.contains('collapsed')) {
+                    tocNav.classList.add('collapsed');
+                } else if (window.innerWidth > 991) {
+                    tocNav.classList.remove('collapsed');
+                }
+            });
+            
             // Smooth scrolling for TOC links
             const tocLinks = document.querySelectorAll('.toc-nav a');
             
@@ -179,6 +310,11 @@
                             top: offsetPosition,
                             behavior: 'smooth'
                         });
+                        
+                        // Close TOC on mobile after clicking
+                        if (window.innerWidth <= 991) {
+                            tocNav.classList.add('collapsed');
+                        }
                     }
                 });
             });
@@ -235,22 +371,24 @@
                 <div class="col-lg-3">
                     <div class="toc-nav">
                         <h3>TABLE OF CONTENTS</h3>
-                        <a href="#parties">1. Parties to the Agreement</a>
-                        <a href="#definitions">2. Definitions and Interpretation</a>
-                        <a href="#services">3. Services</a>
-                        <a href="#advertising">4. Advertising</a>
-                        <a href="#payments">5. Payments</a>
-                        <a href="#fees">6. Fees and Charges</a>
-                        <a href="#representations">7. Your Representations and Warranties</a>
-                        <a href="#termination">8. Suspension or Termination</a>
-                        <a href="#intellectual-property">9. Intellectual Property</a>
-                        <a href="#indemnity">10. Indemnity</a>
-                        <a href="#disclaimers">11. Disclaimers</a>
-                        <a href="#liability">12. Limitation of Liability</a>
-                        <a href="#taxation">13. Taxation</a>
-                        <a href="#force-majeure">14. Force Majeure</a>
-                        <a href="#security">15. Security</a>
-                        <a href="#miscellaneous">16. Miscellaneous</a>
+                        <div class="toc-links">
+                            <a href="#parties">1. Parties to the Agreement</a>
+                            <a href="#definitions">2. Definitions and Interpretation</a>
+                            <a href="#services">3. Services</a>
+                            <a href="#advertising">4. Advertising</a>
+                            <a href="#payments">5. Payments</a>
+                            <a href="#fees">6. Fees and Charges</a>
+                            <a href="#representations">7. Your Representations and Warranties</a>
+                            <a href="#termination">8. Suspension or Termination</a>
+                            <a href="#intellectual-property">9. Intellectual Property</a>
+                            <a href="#indemnity">10. Indemnity</a>
+                            <a href="#disclaimers">11. Disclaimers</a>
+                            <a href="#liability">12. Limitation of Liability</a>
+                            <a href="#taxation">13. Taxation</a>
+                            <a href="#force-majeure">14. Force Majeure</a>
+                            <a href="#security">15. Security</a>
+                            <a href="#miscellaneous">16. Miscellaneous</a>
+                        </div>
                     </div>
                 </div>
                 <div class="col-lg-9">
