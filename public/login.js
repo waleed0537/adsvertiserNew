@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (window.Toast) {
             Toast.show(message, 'success');
         } else {
-            alert(message);
+      
         }
     }
 

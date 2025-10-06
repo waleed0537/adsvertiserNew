@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
               if (window.Toast) {
                   Toast.show("Campaign created successfully!", 'success');
               } else {
-                  alert("Campaign created successfully!");
+                
               }
 
               // Reset form
@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (window.Toast) {
               Toast.show(errorMessage, 'error');
           } else {
-              alert(errorMessage);
+         
           }
 
           // Handle authentication errors
