@@ -21,9 +21,12 @@ const BASE_DOMAIN = isProduction
 // Simple CORS configuration
 app.use(cors({
   origin: function (origin, callback) {
-    const allowedOrigins = [
+ const allowedOrigins = [
   'https://adsvertiser.com',
   'http://adsvertiser.com',
+  'https://www.adsvertiser.com',
+  'http://www.adsvertiser.com',
+  'http://5.78.41.137:3002',  // Add your actual server IP
   'http://localhost:3002',
   'http://127.0.0.1:3002'
 ];
