@@ -199,8 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
           // Determine base URL
           const baseUrl = window.location.hostname === 'localhost' 
-              ? 'http://localhost:3000'
-              : 'https://adsvertisernew-1.onrender.com';
+              ? 'http://localhost:3002'
+              : 'https://adsvertiser.com';
 
           console.log('Sending request to:', `${baseUrl}/api/campaigns`);
 

@@ -20,8 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Determine base URL
     const getBaseUrl = () => {
         return window.location.hostname === 'localhost' 
-            ? 'http://localhost:3000'
-            : 'https://adsvertisernew-1.onrender.com';
+            ? 'http://localhost:3002'
+            : 'https://adsvertiser.com';
     };
 
     // Enhanced error display function

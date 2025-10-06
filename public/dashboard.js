@@ -1,6 +1,6 @@
 const BASE_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3000'
-    : 'https://adsvertisernew-1.onrender.com';
+    ? 'http://localhost:3002s'
+    : 'https://adsvertiser.com';
 
 document.addEventListener('DOMContentLoaded', function() {
     const logoutButton = document.getElementById('logoutButton');

@@ -2,9 +2,10 @@
 const API_CONFIG = {
     getBaseUrl: () => {
         return window.location.hostname === 'localhost' 
-            ? 'http://localhost:3000'
-            : 'https://adsvertisernew-1.onrender.com';
+            ? 'http://localhost:3002'
+            : 'https://adsvertiser.com';
     },
+    
     
     // Get auth token from localStorage or cookie
     getAuthToken: () => {

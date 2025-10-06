@@ -1,6 +1,6 @@
-const API_ENDPOINTS = {
-    local: 'http://localhost:3000',
-    production: 'https://adsvertisernew-1.onrender.com',
+        const API_ENDPOINTS = {
+    local: 'http://localhost:3002',
+    production: 'https://adsvertiser.com',  // or http://YOUR_SERVER_IP:3002
 };
 
 const BASE_URL = window.location.hostname === 'localhost' ? API_ENDPOINTS.local : API_ENDPOINTS.production;
@@ -22,6 +22,7 @@ async function fetchCampaignData() {
                 }
             }
         );
+
 
         if (!response.ok) {
             throw new Error('Failed to retrieve campaign data.');
