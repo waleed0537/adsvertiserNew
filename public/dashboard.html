@@ -24,16 +24,16 @@
     <div class="container">
         <div id="dashboard" class="dashboard">
             <aside>
-                <div class="top" >
+                <div class="top">
                     <div class="logo">
-                  
+
                     </div>
                     <div class="close" id="close-btn">
                         <span class="material-icons-sharp">close</span>
                     </div>
                 </div>
 
-                <div class="sidebar" style="margin-top: 100px;" >
+                <div class="sidebar" style="margin-top: 100px;">
                     <a href="#dashboard" class="active">
                         <span class="material-icons-sharp">dashboard</span>
                         <h3>Dashboard</h3>
@@ -75,14 +75,15 @@
         </div>
 
         <div class="main-content">
-    
+
 
             <!-- Dashboard Content -->
             <div id="dashboard" class="tab-content">
                 <div class="welcome-container">
                     <div class="welcome-header">
                         <h1>Welcome to Adsvertiser!</h1>
-                        <p class="welcome-subtitle">Thanks for joining Adsvertiser, the reputable advertising network with
+                        <p class="welcome-subtitle">Thanks for joining Adsvertiser, the reputable advertising network
+                            with
                             the best Partner Care approach. We have multiple popular ad formats and tons of high-quality
                             traffic from all over the world!</p>
                     </div>
@@ -186,7 +187,7 @@
 
             <!-- Performance Content -->
             <div id="performance" class="tab-content">
-                
+
                 <h1>Analytics</h1>
                 <div id="dateDiv">
                     <input type="date" id="startDate" class="date-input" aria-label="Start Date">
@@ -205,57 +206,55 @@
                     <h2>Add Funds</h2>
                 </div>
                 <form id="paymentSubmitForm" class="payment-form-content">
-                    <div class="payment-methods">
-                        <button type="button" class="payment-method active" onclick="selectPaymentMethod('stripe')">
+                    <div class="payment-methods"
+                        style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                        <button type="button" class="payment-method active" onclick="selectPaymentMethod('stripe')"
+                            style="width: 100%;">
                             <i class="fa-brands fa-stripe"></i>
                             <span></span>
                         </button>
-                        <button type="button" class="payment-method" onclick="selectPaymentMethod('paypal')">
-                            <i class="fa-brands fa-paypal"></i>
-                            <span></span>
-                        </button>
                     </div>
-        
+
                     <div class="form-section stripe-section">
                         <div class="form-group">
                             <label>Card Number</label>
-                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" >
+                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Expiry Date</label>
-                                <input type="text" id="expiryDate" placeholder="MM/YY" maxlength="5" >
+                                <input type="text" id="expiryDate" placeholder="MM/YY" maxlength="5">
                             </div>
                             <div class="form-group">
                                 <label>CVC</label>
-                                <input type="text" id="cvc" placeholder="123" maxlength="3" >
+                                <input type="text" id="cvc" placeholder="123" maxlength="3">
                             </div>
                         </div>
                     </div>
-        
+
                     <div class="form-section paypal-section hidden">
                         <div class="form-group">
                             <label>PayPal Email</label>
                             <input type="email" id="paypalEmail" placeholder="your@email.com">
                         </div>
                     </div>
-        
+
                     <div class="form-group">
                         <label>Amount</label>
-                        <input type="number" id="amount" placeholder="Enter amount" min="1" step="1" required>
+                        <input type="number" id="amount" placeholder="Enter amount ($)" min="1" step="1" required>
                     </div>
-        
+
                     <button type="submit" class="submit-button">Proceed to Payment</button>
-        
+
                     <!-- Status Label -->
                     <div id="statusLabel" class="status-label"></div>
                 </form>
             </div>
-    
-            
+
+
             <!-- Data Table Content -->
             <div id="datatable" class="tab-content">
-                
+
                 <h1>Analytics</h1>
                 <div id="dateDiv">
                     <input type="date" id="startDateTable" class="date-input" aria-label="Start Date">
@@ -279,188 +278,369 @@
             </div>
 
             <!-- Campaign Content -->
-            <div id="campaign" class="tab-content">
-                
-                <h1>Campaigns</h1>
-               
-                <div class="campaign-container">
-                    <div class="campaign-headers">
-                        <span>Campaign</span>
-                        <span>Impressions</span>
-                        <span>Conversions</span>
-                        <span>Clicks</span>
-                        <span>CTR (%)</span>
-                        <span>CPM ($)</span>
-                        <span>Spent ($)</span>
-                        <span>I2C</span>
+            <!-- Campaign Content -->
+<div id="campaign" class="tab-content">
+    <div class="campaign-page-header">
+        <h1>Campaigns</h1>
+        <div class="campaign-summary">
+            <div class="summary-card">
+                <span class="material-icons-sharp">campaign</span>
+                <div class="summary-info">
+                    <span class="summary-value" id="totalCampaigns">0</span>
+                    <span class="summary-label">Total Campaigns</span>
+                </div>
+            </div>
+            <div class="summary-card">
+                <span class="material-icons-sharp">play_circle</span>
+                <div class="summary-info">
+                    <span class="summary-value active-count" id="activeCampaigns">0</span>
+                    <span class="summary-label">Active</span>
+                </div>
+            </div>
+            <div class="summary-card">
+                <span class="material-icons-sharp">pause_circle</span>
+                <div class="summary-info">
+                    <span class="summary-value paused-count" id="pausedCampaigns">0</span>
+                    <span class="summary-label">Paused</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="campaign-container">
+        <div class="campaign-headers">
+            <span>Campaign</span>
+            <span>Status</span>
+            <span>Impressions</span>
+            <span>Clicks</span>
+            <span>CTR (%)</span>
+            <span>CPM ($)</span>
+            <span>Spent ($)</span>
+            <span>Actions</span>
+        </div>
+        <div class="campaign-cards" id="campaignTableBody">
+            <!-- Dynamic content goes here -->
+            <div class="empty-campaign-state">
+                <span class="material-icons-sharp">inventory_2</span>
+                <h3>No Campaigns Yet</h3>
+                <p>Create your first campaign to start driving traffic</p>
+                <button class="action-button primary" onclick="showTab('newCampaign')">
+                    <span class="material-icons-sharp">add_circle</span>
+                    Create Campaign
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+            <!-- New Campaign Content -->
+            <!-- New Campaign Content -->
+<div id="newCampaign" class="tab-content">
+    <div class="campaign-creation-header">
+        <h1>Create New Campaign</h1>
+        <p class="campaign-subtitle">Set up your advertising campaign with customized targeting and budget settings</p>
+    </div>
+    
+    <form id="campaignForm">
+        <!-- Required Settings -->
+        <div class="form-section">
+            <h2>Campaign Settings</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="campaign-name">
+                        <span class="material-icons-sharp">campaign</span>
+                        Campaign Name
+                    </label>
+                    <input type="text" id="campaign-name" name="campaign-name"
+                        placeholder="Enter campaign name" required>
+                </div>
+                <div class="form-group">
+                    <label for="device-format">
+                        <span class="material-icons-sharp">devices</span>
+                        Device
+                    </label>
+                    <select id="device-format" name="device-format" required>
+                        <option value="">Select device type</option>
+                        <option value="mobile">Mobile</option>
+                        <option value="tablet">Desktop</option>
+                        <option value="mobile-tablet">Mobile + Desktop</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="traffic-type">
+                        <span class="material-icons-sharp">traffic</span>
+                        Traffic Type
+                    </label>
+                    <select id="traffic-type" name="traffic-type" required>
+                        <option value="">Select traffic type</option>
+                        <option value="mainstream">Mainstream</option>
+                        <option value="adult">Adult</option>
+                        <option value="mainstreaam+adult">Mainstream + Adult</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="connection-type">
+                        <span class="material-icons-sharp">wifi</span>
+                        Connection Type
+                    </label>
+                    <select id="connection-type" name="connection-type" required>
+                        <option value="">Select connection type</option>
+                        <option value="wifi">Wifi</option>
+                        <option value="cellular">Cellular</option>
+                        <option value="Wifi+cellular">Wifi + Cellular</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Unit & Pricing -->
+        <div class="form-section">
+            <h2>Ad Unit & Pricing</h2>
+            <div class="form-group">
+                <label>
+                    <span class="material-icons-sharp">ad_units</span>
+                    Select Ad Unit
+                </label>
+                <div class="ad-unit-buttons">
+                    <button type="button" class="ad-unit-btn" data-value="popunder">
+                        <span class="material-icons-sharp">open_in_new</span>
+                        Popunder
+                    </button>
+                    <button type="button" class="ad-unit-btn" data-value="social-bar">
+                        <span class="material-icons-sharp">chat</span>
+                        Social Bar
+                    </button>
+                    <button type="button" class="ad-unit-btn" data-value="native-banner">
+                        <span class="material-icons-sharp">view_carousel</span>
+                        Native Banner
+                    </button>
+                    <button type="button" class="ad-unit-btn" data-value="in-page-push">
+                        <span class="material-icons-sharp">notifications</span>
+                        In-Page Push
+                    </button>
+                    <button type="button" class="ad-unit-btn" data-value="interstitial">
+                        <span class="material-icons-sharp">fullscreen</span>
+                        Interstitial
+                    </button>
+                </div>
+                <input type="hidden" id="ad-unit" name="ad-unit" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="landing-url">
+                    <span class="material-icons-sharp">link</span>
+                    Landing URL
+                </label>
+                <input type="url" id="landing-url" name="landing-url" placeholder="https://example.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <span class="material-icons-sharp">payments</span>
+                    Pricing Type
+                </label>
+                <div class="pricing-buttons">
+                    <label class="pricing-option">
+                        <input type="radio" name="pricing-type" value="cpm" required>
+                        <span class="pricing-card">
+                            <strong>CPM</strong>
+                            <small>Cost Per Mille</small>
+                        </span>
+                    </label>
+                    <label class="pricing-option">
+                        <input type="radio" name="pricing-type" value="cpa">
+                        <span class="pricing-card">
+                            <strong>CPA</strong>
+                            <small>Cost Per Action</small>
+                        </span>
+                    </label>
+                    <label class="pricing-option">
+                        <input type="radio" name="pricing-type" value="cpc">
+                        <span class="pricing-card">
+                            <strong>CPC</strong>
+                            <small>Cost Per Click</small>
+                        </span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget & Schedule -->
+        <div class="form-section">
+            <h2>Budget & Schedule</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="budget">
+                        <span class="material-icons-sharp">account_balance_wallet</span>
+                        Budget
+                    </label>
+                    <div class="budget-container">
+                        <span class="currency-symbol">$</span>
+                        <input type="number" id="budget" name="budget" placeholder="0.00" 
+                               class="budget-input" min="1" step="0.01" required>
+                        <select id="budget-period" class="period-select">
+                            <option value="per_day">Per Day</option>
+                            <option value="per_week">Per Week</option>
+                            <option value="per_month">Per Month</option>
+                        </select>
                     </div>
-                    <div class="campaign-cards" id="campaignTableBody">
-                        <!-- Dynamic content goes here -->
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <span class="material-icons-sharp">schedule</span>
+                        Campaign Schedule
+                    </label>
+                    <div class="schedule-options">
+                        <label class="schedule-option">
+                            <input type="radio" name="schedule" value="start-once-verified" checked>
+                            <span class="schedule-card">
+                                <span class="material-icons-sharp">check_circle</span>
+                                <strong>Start Once Verified</strong>
+                            </span>
+                        </label>
+                        <label class="schedule-option">
+                            <input type="radio" name="schedule" value="keep-inactive">
+                            <span class="schedule-card">
+                                <span class="material-icons-sharp">pause_circle</span>
+                                <strong>Keep Inactive</strong>
+                            </span>
+                        </label>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- New Campaign Content -->
-            <div id="newCampaign" class="tab-content">
-                <form id="campaignForm">
-                    <!-- Required Settings -->
-                    <div class="form-section">
-                        <h2>New Campaign</h2>
-                        <div class="form-grid">
-                            <div>
-                                <label for="campaign-name">Campaign Name</label>
-                                <input type="text" id="campaign-name" name="campaign-name"
-                                    placeholder="Enter campaign name" required>
-                            </div>
-                            <div>
-                                <label for="device-format">Device</label>
-                                <select id="device-format" name="device-format" required>
-                                    <option value="mobile">Mobile</option>
-                                    <option value="tablet">Desktop</option>
-                                    <option value="mobile-tablet">Mobile + Desktop</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="traffic-type">Traffic Type</label>
-                                <select id="traffic-type" name="traffic-type" required>
-                                    <option value="mainstream">Mainstream</option>
-                                    <option value="adult">Adult</option>
-                                    <option value="mainstreaam+adult">Mainstream + Adult</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <label for="connection-type">Connection Type</label>
-                            <select id="connection-type" name="connection-type" required>
-                                <option value="wifi">Wifi</option>
-                                <option value="cellular">Cellular</option>
-                                <option value="Wifi+cellular">Wifi + Cellular</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Ad Unit & Pricing -->
-                    <div class="form-section">
-                        <h2>Ad Unit & Pricing Type</h2>
-                        <div class="form-row">
-                            <label>Ad Unit</label>
-                            <div class="ad-unit-buttons">
-                                <button type="button" class="ad-unit-btn" data-value="popunder">Popunder</button>
-                                <button type="button" class="ad-unit-btn" data-value="social-bar">Social Bar</button>
-                                <button type="button" class="ad-unit-btn" data-value="native-banner">Native
-                                    Banner</button>
-                                <button type="button" class="ad-unit-btn" data-value="in-page-push">In-Page
-                                    Push</button>
-                                <button type="button" class="ad-unit-btn"
-                                    data-value="interstitial">Interstitial</button>
-                            </div>
-                            <input type="hidden" id="ad-unit" name="ad-unit">
-                        </div>
-                        <div class="form-row">
-                            <label for="landing-url">Landing URL</label>
-                            <input type="text" id="landing-url" name="landing-url" placeholder="https://" required>
-                        </div>
-                        <div class="form-row">
-                            <label>Pricing Type</label>
-                            <div class="pricing-buttons">
-                                <label class="pricing-option">
-                                    <input type="radio" name="pricing-type" value="cpm" required>
-                                    <span class="pricing-label">CPM</span>
-                                </label>
-                                <label class="pricing-option">
-                                    <input type="radio" name="pricing-type" value="cpa">
-                                    <span class="pricing-label">CPA</span>
-                                </label>
-                                <label class="pricing-option">
-                                    <input type="radio" name="pricing-type" value="cpc">
-                                    <span class="pricing-label">CPC</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Schedule -->
-                    <div class="form-section">
-                        <h2>Schedule</h2>
-                        <div class="form-row">
-                            <label>
-                                <input type="radio" name="schedule" value="start-once-verified" checked>
-                                Start once verified
-                            </label>
-                            <label>
-                                <input type="radio" name="schedule" value="keep-inactive">
-                                Keep inactive
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Countries -->
-                    <div class="form-section countries-section">
-                        <h2>Countries</h2>
-                        <div class="form-row">
-                            <label for="budget">Budget</label>
-                            <div class="budget-container">
-                                <div class="currency-symbol">$</div>
-                                <input type="number" id="budget" name="budget" placeholder="0.00" class="budget-input"
-                                    required>
-                                <select id="budget-period" class="period-select">
-                                    <option value="per_day">Per Day</option>
-                                    <option value="per_week">Per Week</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <label for="country-search">Search Countries</label>
-                            <input type="text" id="country-search" class="search-input"
-                                placeholder="Type to search countries...">
-                        </div>
-                        <div class="form-row">
-                            <label>Available Countries</label>
-                            <div class="countries-list">
-                                <div class="country-options">
-                                    <div class="country-option" data-value="US">United States</div>
-                                    <div class="country-option" data-value="CA">Canada</div>
-                                    <div class="country-option" data-value="GB">United Kingdom</div>
-                                    <div class="country-option" data-value="AU">Australia</div>
-                                    <div class="country-option" data-value="DE">Germany</div>
-                                    <div class="country-option" data-value="FR">France</div>
-                                    <div class="country-option" data-value="IT">Italy</div>
-                                    <div class="country-option" data-value="ES">Spain</div>
-                                    <div class="country-option" data-value="BR">Brazil</div>
-                                    <div class="country-option" data-value="IN">India</div>
-                                    <div class="country-option" data-value="CN">China</div>
-                                    <div class="country-option" data-value="JP">Japan</div>
-                                    <div class="country-option" data-value="RU">Russia</div>
-                                    <div class="country-option" data-value="MX">Mexico</div>
-                                    <div class="country-option" data-value="KR">South Korea</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <label>Selected Countries</label>
-                            <div class="selected-countries"></div>
-                        </div>
-                    </div>
-
-                    <!-- Advanced Settings -->
-                    <div class="form-section schedule-section">
-                        <h2>Advanced Settings</h2>
-                        <div class="form-grid">
-                            <div>
-                                <label for="blacklist-whitelist">Blacklist/Whitelist</label>
-                                <textarea id="blacklist-whitelist" name="blacklist-whitelist"
-                                    placeholder="Enter valid placement IDs"></textarea>
-                            </div>
-                            <div>
-                                <label for="ip-range">IP Range Targeting</label>
-                                <textarea id="ip-range" name="ip-range" placeholder="Enter IP ranges"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit">Submit</button>
-                </form>
+        <!-- Targeting -->
+        <div class="form-section">
+            <h2>Geographic Targeting</h2>
+            <div class="form-group">
+                <label for="country-search">
+                    <span class="material-icons-sharp">search</span>
+                    Search Countries
+                </label>
+                <input type="text" id="country-search" class="search-input"
+                    placeholder="Type to search countries...">
             </div>
+            
+            <div class="targeting-grid">
+                <div class="form-group">
+                    <label>Available Countries</label>
+                    <div class="countries-list">
+                        <div class="country-options">
+                            <div class="country-option" data-value="US">
+                                <span class="material-icons-sharp">place</span>
+                                United States
+                            </div>
+                            <div class="country-option" data-value="CA">
+                                <span class="material-icons-sharp">place</span>
+                                Canada
+                            </div>
+                            <div class="country-option" data-value="GB">
+                                <span class="material-icons-sharp">place</span>
+                                United Kingdom
+                            </div>
+                            <div class="country-option" data-value="AU">
+                                <span class="material-icons-sharp">place</span>
+                                Australia
+                            </div>
+                            <div class="country-option" data-value="DE">
+                                <span class="material-icons-sharp">place</span>
+                                Germany
+                            </div>
+                            <div class="country-option" data-value="FR">
+                                <span class="material-icons-sharp">place</span>
+                                France
+                            </div>
+                            <div class="country-option" data-value="IT">
+                                <span class="material-icons-sharp">place</span>
+                                Italy
+                            </div>
+                            <div class="country-option" data-value="ES">
+                                <span class="material-icons-sharp">place</span>
+                                Spain
+                            </div>
+                            <div class="country-option" data-value="BR">
+                                <span class="material-icons-sharp">place</span>
+                                Brazil
+                            </div>
+                            <div class="country-option" data-value="IN">
+                                <span class="material-icons-sharp">place</span>
+                                India
+                            </div>
+                            <div class="country-option" data-value="CN">
+                                <span class="material-icons-sharp">place</span>
+                                China
+                            </div>
+                            <div class="country-option" data-value="JP">
+                                <span class="material-icons-sharp">place</span>
+                                Japan
+                            </div>
+                            <div class="country-option" data-value="RU">
+                                <span class="material-icons-sharp">place</span>
+                                Russia
+                            </div>
+                            <div class="country-option" data-value="MX">
+                                <span class="material-icons-sharp">place</span>
+                                Mexico
+                            </div>
+                            <div class="country-option" data-value="KR">
+                                <span class="material-icons-sharp">place</span>
+                                South Korea
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Selected Countries (<span id="selected-count">0</span>)</label>
+                    <div class="selected-countries">
+                        <div class="empty-state">
+                            <span class="material-icons-sharp">add_location</span>
+                            <p>No countries selected</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Settings -->
+        <div class="form-section">
+            <h2>Advanced Settings</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="blacklist-whitelist">
+                        <span class="material-icons-sharp">filter_list</span>
+                        Blacklist/Whitelist
+                    </label>
+                    <textarea id="blacklist-whitelist" name="blacklist-whitelist"
+                        placeholder="Enter valid placement IDs (one per line)"></textarea>
+                    <small class="helper-text">Separate multiple IDs with line breaks</small>
+                </div>
+                <div class="form-group">
+                    <label for="ip-range">
+                        <span class="material-icons-sharp">network_check</span>
+                        IP Range Targeting
+                    </label>
+                    <textarea id="ip-range" name="ip-range" 
+                        placeholder="Enter IP ranges (one per line)&#10;Example: 192.168.1.0/24"></textarea>
+                    <small class="helper-text">Use CIDR notation for IP ranges</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="cancel-button" onclick="showTab('dashboard')">
+                <span class="material-icons-sharp">cancel</span>
+                Cancel
+            </button>
+            <button type="submit" class="submit-button">
+                <span class="material-icons-sharp">send</span>
+                Create Campaign
+            </button>
+        </div>
+    </form>
+</div>
 
             <!-- Support Content -->
             <div id="support" class="tab-content">
@@ -644,209 +824,209 @@
         </div>
         <script>
             // Function to show specific tab
-function showTab(tabName) {
-    // Hide all tab contents
-    const tabs = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => tab.classList.remove('active'));
+            function showTab(tabName) {
+                // Hide all tab contents
+                const tabs = document.querySelectorAll('.tab-content');
+                tabs.forEach(tab => tab.classList.remove('active'));
 
-    // Show the selected tab
-    const selectedTab = document.getElementById(tabName);
-    if (selectedTab) {
-        selectedTab.classList.add('active');
-    }
+                // Show the selected tab
+                const selectedTab = document.getElementById(tabName);
+                if (selectedTab) {
+                    selectedTab.classList.add('active');
+                }
 
-    // If payment tab is selected, show payment form
-    if (tabName === 'payment') {
-        const paymentForm = document.getElementById('paymentForm');
-        if (paymentForm) {
-            paymentForm.classList.remove('hidden');
-        }
-    }
-}
-
-// Function to select payment method
-function selectPaymentMethod(method) {
-            const stripeSection = document.querySelector('.stripe-section');
-            const paypalSection = document.querySelector('.paypal-section');
-            const paymentMethodButtons = document.querySelectorAll('.payment-method');
-
-            // Reset active state
-            paymentMethodButtons.forEach(btn => btn.classList.remove('active'));
-
-            if (method === 'stripe') {
-                document.querySelector('.payment-method:first-child').classList.add('active');
-                stripeSection.classList.remove('hidden');
-                paypalSection.classList.add('hidden');
-            } else {
-                document.querySelector('.payment-method:last-child').classList.add('active');
-                stripeSection.classList.add('hidden');
-                paypalSection.classList.remove('hidden');
-            }
-        }
-
-
-// Optional: Add event listeners for date picker
-document.addEventListener('DOMContentLoaded', () => {
-    const dateFilterBtn = document.querySelector('.date-filter-btn');
-    const datePickerPopup = document.querySelector('.date-picker-popup');
-    const cancelBtn = document.querySelector('.cancel-btn');
-    const applyBtn = document.querySelector('.apply-btn');
-
-    if (dateFilterBtn && datePickerPopup) {
-        dateFilterBtn.addEventListener('click', () => {
-            datePickerPopup.classList.toggle('hidden');
-        });
-    }
-
-    if (cancelBtn && datePickerPopup) {
-        cancelBtn.addEventListener('click', () => {
-            datePickerPopup.classList.add('hidden');
-        });
-    }
-
-    if (applyBtn && datePickerPopup) {
-        applyBtn.addEventListener('click', () => {
-            const startDate = document.getElementById('startDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endDate = document.getElementById('endDate').value;
-            const endTime = document.getElementById('endTime').value;
-
-            const dateRangeText = document.getElementById('dateRangeText');
-            if (dateRangeText) {
-                dateRangeText.textContent = `${startDate} ${startTime} - ${endDate} ${endTime}`;
+                // If payment tab is selected, show payment form
+                if (tabName === 'payment') {
+                    const paymentForm = document.getElementById('paymentForm');
+                    if (paymentForm) {
+                        paymentForm.classList.remove('hidden');
+                    }
+                }
             }
 
-            datePickerPopup.classList.add('hidden');
-        });
-    }
-});
-function selectPaymentMethod(method) {
-            const stripeSection = document.querySelector('.stripe-section');
-            const paypalSection = document.querySelector('.paypal-section');
-            const paymentMethodButtons = document.querySelectorAll('.payment-method');
+            // Function to select payment method
+            function selectPaymentMethod(method) {
+                const stripeSection = document.querySelector('.stripe-section');
+                const paypalSection = document.querySelector('.paypal-section');
+                const paymentMethodButtons = document.querySelectorAll('.payment-method');
 
-            // Reset active state
-            paymentMethodButtons.forEach(btn => btn.classList.remove('active'));
+                // Reset active state
+                paymentMethodButtons.forEach(btn => btn.classList.remove('active'));
 
-            if (method === 'stripe') {
-                document.querySelector('.payment-method:first-child').classList.add('active');
-                stripeSection.classList.remove('hidden');
-                paypalSection.classList.add('hidden');
-            } else {
-                document.querySelector('.payment-method:last-child').classList.add('active');
-                stripeSection.classList.add('hidden');
-                paypalSection.classList.remove('hidden');
-            }
-        }
-
-        function selectPaymentMethod(method) {
-            const stripeSection = document.querySelector('.stripe-section');
-            const paypalSection = document.querySelector('.paypal-section');
-            const paymentMethodButtons = document.querySelectorAll('.payment-method');
-
-            // Reset active state
-            paymentMethodButtons.forEach(btn => btn.classList.remove('active'));
-
-            if (method === 'stripe') {
-                document.querySelector('.payment-method:first-child').classList.add('active');
-                stripeSection.classList.remove('hidden');
-                paypalSection.classList.add('hidden');
-            } else {
-                document.querySelector('.payment-method:last-child').classList.add('active');
-                stripeSection.classList.add('hidden');
-                paypalSection.classList.remove('hidden');
-            }
-        }
-
-        document.getElementById('paymentSubmitForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const statusLabel = document.getElementById('statusLabel');
-            
-            // Reset previous status
-            statusLabel.textContent = '';
-            statusLabel.classList.remove('success', 'error');
-            statusLabel.style.display = 'none';
-
-            // Collect form data
-            const formData = {
-                cardNumber: document.getElementById('cardNumber').value,
-                expiryDate: document.getElementById('expiryDate').value,
-                cvc: document.getElementById('cvc').value,
-                amount: document.getElementById('amount').value,
-                paymentMethod: document.querySelector('.payment-method.active span').textContent.toLowerCase(),
-                recipientEmail: 'user@example.com' // Replace with actual user email
-            };
-
-            try {
-                // Send email using fetch to your server endpoint
-                const response = await fetch('/send-payment-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                if (response.ok) {
-                    // Success scenario
-                    statusLabel.textContent = 'Payment email sent successfully!';
-                    statusLabel.classList.add('success');
-                    statusLabel.style.display = 'block';
-
-                    // Optional: Reset form after successful submission
-                    this.reset();
+                if (method === 'stripe') {
+                    document.querySelector('.payment-method:first-child').classList.add('active');
+                    stripeSection.classList.remove('hidden');
+                    paypalSection.classList.add('hidden');
                 } else {
-                    // Error scenario
-                    const errorData = await response.json();
-                    statusLabel.textContent = errorData.message || 'Failed to send payment email';
+                    document.querySelector('.payment-method:last-child').classList.add('active');
+                    stripeSection.classList.add('hidden');
+                    paypalSection.classList.remove('hidden');
+                }
+            }
+
+
+            // Optional: Add event listeners for date picker
+            document.addEventListener('DOMContentLoaded', () => {
+                const dateFilterBtn = document.querySelector('.date-filter-btn');
+                const datePickerPopup = document.querySelector('.date-picker-popup');
+                const cancelBtn = document.querySelector('.cancel-btn');
+                const applyBtn = document.querySelector('.apply-btn');
+
+                if (dateFilterBtn && datePickerPopup) {
+                    dateFilterBtn.addEventListener('click', () => {
+                        datePickerPopup.classList.toggle('hidden');
+                    });
+                }
+
+                if (cancelBtn && datePickerPopup) {
+                    cancelBtn.addEventListener('click', () => {
+                        datePickerPopup.classList.add('hidden');
+                    });
+                }
+
+                if (applyBtn && datePickerPopup) {
+                    applyBtn.addEventListener('click', () => {
+                        const startDate = document.getElementById('startDate').value;
+                        const startTime = document.getElementById('startTime').value;
+                        const endDate = document.getElementById('endDate').value;
+                        const endTime = document.getElementById('endTime').value;
+
+                        const dateRangeText = document.getElementById('dateRangeText');
+                        if (dateRangeText) {
+                            dateRangeText.textContent = `${startDate} ${startTime} - ${endDate} ${endTime}`;
+                        }
+
+                        datePickerPopup.classList.add('hidden');
+                    });
+                }
+            });
+            function selectPaymentMethod(method) {
+                const stripeSection = document.querySelector('.stripe-section');
+                const paypalSection = document.querySelector('.paypal-section');
+                const paymentMethodButtons = document.querySelectorAll('.payment-method');
+
+                // Reset active state
+                paymentMethodButtons.forEach(btn => btn.classList.remove('active'));
+
+                if (method === 'stripe') {
+                    document.querySelector('.payment-method:first-child').classList.add('active');
+                    stripeSection.classList.remove('hidden');
+                    paypalSection.classList.add('hidden');
+                } else {
+                    document.querySelector('.payment-method:last-child').classList.add('active');
+                    stripeSection.classList.add('hidden');
+                    paypalSection.classList.remove('hidden');
+                }
+            }
+
+            function selectPaymentMethod(method) {
+                const stripeSection = document.querySelector('.stripe-section');
+                const paypalSection = document.querySelector('.paypal-section');
+                const paymentMethodButtons = document.querySelectorAll('.payment-method');
+
+                // Reset active state
+                paymentMethodButtons.forEach(btn => btn.classList.remove('active'));
+
+                if (method === 'stripe') {
+                    document.querySelector('.payment-method:first-child').classList.add('active');
+                    stripeSection.classList.remove('hidden');
+                    paypalSection.classList.add('hidden');
+                } else {
+                    document.querySelector('.payment-method:last-child').classList.add('active');
+                    stripeSection.classList.add('hidden');
+                    paypalSection.classList.remove('hidden');
+                }
+            }
+
+            document.getElementById('paymentSubmitForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const statusLabel = document.getElementById('statusLabel');
+
+                // Reset previous status
+                statusLabel.textContent = '';
+                statusLabel.classList.remove('success', 'error');
+                statusLabel.style.display = 'none';
+
+                // Collect form data
+                const formData = {
+                    cardNumber: document.getElementById('cardNumber').value,
+                    expiryDate: document.getElementById('expiryDate').value,
+                    cvc: document.getElementById('cvc').value,
+                    amount: document.getElementById('amount').value,
+                    paymentMethod: document.querySelector('.payment-method.active span').textContent.toLowerCase(),
+                    recipientEmail: 'user@example.com' // Replace with actual user email
+                };
+
+                try {
+                    // Send email using fetch to your server endpoint
+                    const response = await fetch('/send-payment-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    if (response.ok) {
+                        // Success scenario
+                        statusLabel.textContent = 'Your payment is under review. Our team will reach you within 48 hours!';
+                        statusLabel.classList.add('success');
+                        statusLabel.style.display = 'block';
+
+                        // Optional: Reset form after successful submission
+                        this.reset();
+                    } else {
+                        // Error scenario
+                        const errorData = await response.json();
+                        statusLabel.textContent = errorData.message || 'Failed to send payment email';
+                        statusLabel.classList.add('error');
+                        statusLabel.style.display = 'block';
+                    }
+                } catch (error) {
+                    // Network or unexpected errors
+                    statusLabel.textContent = 'An error occurred. Please try again.';
                     statusLabel.classList.add('error');
                     statusLabel.style.display = 'block';
+                    console.error('Error:', error);
                 }
-            } catch (error) {
-                // Network or unexpected errors
-                statusLabel.textContent = 'An error occurred. Please try again.';
-                statusLabel.classList.add('error');
-                statusLabel.style.display = 'block';
-                console.error('Error:', error);
-            }
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-    // Get input elements
-    const cardNumberInput = document.getElementById('cardNumber');
-    const expiryDateInput = document.getElementById('expiryDate');
+            });
+            document.addEventListener('DOMContentLoaded', function () {
+                // Get input elements
+                const cardNumberInput = document.getElementById('cardNumber');
+                const expiryDateInput = document.getElementById('expiryDate');
 
-    // Format card number
-    cardNumberInput.addEventListener('input', function(e) {
-        // Remove all non-digit characters
-        let value = e.target.value.replace(/\D/g, '');
-        
-        // Add space after every 4 digits
-        value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
-        
-        // Update input value
-        e.target.value = value;
-    });
+                // Format card number
+                cardNumberInput.addEventListener('input', function (e) {
+                    // Remove all non-digit characters
+                    let value = e.target.value.replace(/\D/g, '');
 
-    // Format expiry date
-    expiryDateInput.addEventListener('input', function(e) {
-        // Remove all non-digit characters
-        let value = e.target.value.replace(/\D/g, '');
-        
-        // Add slash after first 2 digits if there are more than 2 digits
-        if (value.length >= 2) {
-            value = value.substring(0, 2) + '/' + value.substring(2);
-        }
-        
-        // Update input value
-        e.target.value = value;
-    });
+                    // Add space after every 4 digits
+                    value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
 
-    // Optional: Enforce numeric input for CVC
-    const cvcInput = document.getElementById('cvc');
-    cvcInput.addEventListener('input', function(e) {
-        e.target.value = e.target.value.replace(/\D/g, '');
-    });
-});
+                    // Update input value
+                    e.target.value = value;
+                });
+
+                // Format expiry date
+                expiryDateInput.addEventListener('input', function (e) {
+                    // Remove all non-digit characters
+                    let value = e.target.value.replace(/\D/g, '');
+
+                    // Add slash after first 2 digits if there are more than 2 digits
+                    if (value.length >= 2) {
+                        value = value.substring(0, 2) + '/' + value.substring(2);
+                    }
+
+                    // Update input value
+                    e.target.value = value;
+                });
+
+                // Optional: Enforce numeric input for CVC
+                const cvcInput = document.getElementById('cvc');
+                cvcInput.addEventListener('input', function (e) {
+                    e.target.value = e.target.value.replace(/\D/g, '');
+                });
+            });
         </script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <!-- <script src="config.js"></script> -->
@@ -857,6 +1037,103 @@ function selectPaymentMethod(method) {
         <script src="campaign.js"></script>
         <script src="traffic-chart.js"></script>
         <script src="support.js"></script>
+        <script>
+            // Country selection functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const countryOptions = document.querySelectorAll('.country-option');
+    const selectedCountriesContainer = document.querySelector('.selected-countries');
+    const countrySearch = document.getElementById('country-search');
+    const selectedCountElement = document.getElementById('selected-count');
+    let selectedCountries = [];
+
+    // Handle country selection
+    countryOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const countryValue = this.getAttribute('data-value');
+            // Get only the text, excluding the icon
+            const countryName = Array.from(this.childNodes)
+                .filter(node => node.nodeType === Node.TEXT_NODE)
+                .map(node => node.textContent.trim())
+                .join('');
+
+            // Check if country is already selected
+            if (!selectedCountries.find(c => c.value === countryValue)) {
+                selectedCountries.push({ value: countryValue, name: countryName });
+                updateSelectedCountries();
+            }
+        });
+    });
+
+    // Update selected countries display
+    function updateSelectedCountries() {
+        // Update count
+        if (selectedCountElement) {
+            selectedCountElement.textContent = selectedCountries.length;
+        }
+
+        // Clear container
+        if (!selectedCountriesContainer) return;
+        
+        selectedCountriesContainer.innerHTML = '';
+
+        if (selectedCountries.length === 0) {
+            // Show empty state
+            selectedCountriesContainer.innerHTML = `
+                <div class="empty-state">
+                    <span class="material-icons-sharp">add_location</span>
+                    <p>No countries selected</p>
+                </div>
+            `;
+        } else {
+            // Show selected countries
+            selectedCountries.forEach(country => {
+                const tag = document.createElement('div');
+                tag.className = 'selected-country-tag';
+                tag.innerHTML = `
+                    ${country.name}
+                    <span class="remove-country" data-value="${country.value}">×</span>
+                `;
+                selectedCountriesContainer.appendChild(tag);
+            });
+
+            // Add remove functionality
+            document.querySelectorAll('.remove-country').forEach(removeBtn => {
+                removeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const countryValue = this.getAttribute('data-value');
+                    selectedCountries = selectedCountries.filter(c => c.value !== countryValue);
+                    updateSelectedCountries();
+                });
+            });
+        }
+    }
+
+    // Search functionality
+    if (countrySearch) {
+        countrySearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            countryOptions.forEach(option => {
+                // Get country name without icon
+                const countryName = Array.from(option.childNodes)
+                    .filter(node => node.nodeType === Node.TEXT_NODE)
+                    .map(node => node.textContent.trim())
+                    .join('')
+                    .toLowerCase();
+                    
+                if (countryName.includes(searchTerm)) {
+                    option.style.display = 'flex';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Initialize empty state
+    updateSelectedCountries();
+});
+        </script>
 </body>
 
 </html>
