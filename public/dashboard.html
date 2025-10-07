@@ -278,48 +278,26 @@
             </div>
 
             <!-- Campaign Content -->
-<!-- Campaign Content -->
-<div id="campaign" class="tab-content">
-    <div class="campaign-header-section">
-        <div class="header-left">
-            <h1>Campaigns</h1>
-            <p class="subtitle">Manage and monitor your advertising campaigns</p>
-        </div>
-        <div class="header-right">
-            <button class="btn-primary" onclick="showTab('newCampaign')">
-                <span class="material-icons-sharp">add</span>
-                New Campaign
-            </button>
-        </div>
-    </div>
+            <div id="campaign" class="tab-content">
 
-    <div class="campaign-table-wrapper">
-        <div class="campaign-table-header">
-            <div class="header-cell">Campaign</div>
-            <div class="header-cell">Status</div>
-            <div class="header-cell">Impressions</div>
-            <div class="header-cell">Conversions</div>
-            <div class="header-cell">Clicks</div>
-            <div class="header-cell">CTR</div>
-            <div class="header-cell">CPM</div>
-            <div class="header-cell">Spent</div>
-            <div class="header-cell">Actions</div>
-        </div>
-        
-        <div class="campaign-table-body" id="campaignTableBody">
-            <!-- Dynamic content will be inserted here -->
-            <div class="empty-campaign-state">
-                <span class="material-icons-sharp">campaign</span>
-                <h3>No Campaigns Found</h3>
-                <p>Create your first campaign to start driving traffic</p>
-                <button class="create-campaign-btn" onclick="showTab('newCampaign')">
-                    <span class="material-icons-sharp">add</span>
-                    Create Campaign
-                </button>
+                <h1>Campaigns</h1>
+
+                <div class="campaign-container">
+                    <div class="campaign-headers">
+                        <span>Campaign</span>
+                        <span>Impressions</span>
+                        <span>Conversions</span>
+                        <span>Clicks</span>
+                        <span>CTR (%)</span>
+                        <span>CPM ($)</span>
+                        <span>Spent ($)</span>
+                        <span>I2C</span>
+                    </div>
+                    <div class="campaign-cards" id="campaignTableBody">
+                        <!-- Dynamic content goes here -->
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
 
             <!-- New Campaign Content -->
             <!-- New Campaign Content -->
