@@ -282,52 +282,31 @@
 <div id="campaign" class="tab-content">
     <div class="campaign-page-header">
         <h1>Campaigns</h1>
-        <div class="campaign-summary">
-            <div class="summary-card">
-                <span class="material-icons-sharp">campaign</span>
-                <div class="summary-info">
-                    <span class="summary-value" id="totalCampaigns">0</span>
-                    <span class="summary-label">Total Campaigns</span>
-                </div>
-            </div>
-            <div class="summary-card">
-                <span class="material-icons-sharp">play_circle</span>
-                <div class="summary-info">
-                    <span class="summary-value active-count" id="activeCampaigns">0</span>
-                    <span class="summary-label">Active</span>
-                </div>
-            </div>
-            <div class="summary-card">
-                <span class="material-icons-sharp">pause_circle</span>
-                <div class="summary-info">
-                    <span class="summary-value paused-count" id="pausedCampaigns">0</span>
-                    <span class="summary-label">Paused</span>
-                </div>
-            </div>
-        </div>
     </div>
 
     <div class="campaign-container">
-        <div class="campaign-headers">
-            <span>Campaign</span>
-            <span>Status</span>
-            <span>Impressions</span>
-            <span>Clicks</span>
-            <span>CTR (%)</span>
-            <span>CPM ($)</span>
-            <span>Spent ($)</span>
-            <span>Actions</span>
-        </div>
-        <div class="campaign-cards" id="campaignTableBody">
-            <!-- Dynamic content goes here -->
-            <div class="empty-campaign-state">
-                <span class="material-icons-sharp">inventory_2</span>
-                <h3>No Campaigns Yet</h3>
-                <p>Create your first campaign to start driving traffic</p>
-                <button class="action-button primary" onclick="showTab('newCampaign')">
-                    <span class="material-icons-sharp">add_circle</span>
-                    Create Campaign
-                </button>
+        <div class="campaign-table">
+            <div class="campaign-headers">
+                <span>Campaign</span>
+                <span>Status</span>
+                <span>Impressions</span>
+                <span>Clicks</span>
+                <span>CTR (%)</span>
+                <span>CPM ($)</span>
+                <span>Spent ($)</span>
+                <span>Actions</span>
+            </div>
+            <div class="campaign-cards" id="campaignTableBody">
+                <!-- Dynamic content goes here -->
+                <div class="empty-campaign-state">
+                    <span class="material-icons-sharp">inventory_2</span>
+                    <h3>No Campaigns Yet</h3>
+                    <p>Create your first campaign to start driving traffic</p>
+                    <button class="action-button primary" onclick="showTab('newCampaign')">
+                        <span class="material-icons-sharp">add_circle</span>
+                        Create Campaign
+                    </button>
+                </div>
             </div>
         </div>
     </div>
