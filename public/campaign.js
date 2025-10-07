@@ -1,6 +1,6 @@
-        const API_ENDPOINTS = {
+const API_ENDPOINTS = {
     local: 'http://localhost:3002',
-    production: 'https://adsvertiser.com',  // or http://YOUR_SERVER_IP:3002
+    production: 'https://adsvertiser.com',
 };
 
 const BASE_URL = window.location.hostname === 'localhost' ? API_ENDPOINTS.local : API_ENDPOINTS.production;
@@ -23,7 +23,6 @@ async function fetchCampaignData() {
             }
         );
 
-
         if (!response.ok) {
             throw new Error('Failed to retrieve campaign data.');
         }
@@ -40,8 +39,14 @@ async function fetchCampaignData() {
         const campaignTableBody = document.getElementById('campaignTableBody');
         if (campaignTableBody) {
             campaignTableBody.innerHTML = `
-                <div class="campaign-card empty">
-                    <p>No campaigns found. Create a new campaign to get started!</p>
+                <div class="empty-campaign-state">
+                    <span class="material-icons-sharp">campaign</span>
+                    <h3>No Campaigns Found</h3>
+                    <p>Create your first campaign to start driving traffic</p>
+                    <button class="create-campaign-btn" onclick="showTab('newCampaign')">
+                        <span class="material-icons-sharp">add</span>
+                        Create Campaign
+                    </button>
                 </div>
             `;
         }
@@ -49,91 +54,7 @@ async function fetchCampaignData() {
         if (loadingDiv) loadingDiv.style.display = 'none';
     }
 }
-// Example of how to structure campaign cards in your JavaScript
-// Add this structure to your campaign.js file
 
-function createCampaignCard(campaign) {
-    return `
-        <div class="campaign-card">
-            <div class="campaign-card-grid">
-                <!-- Campaign Name Column -->
-                <div class="campaign-name-cell">
-                    <div class="name">${campaign.name}</div>
-                    <div class="meta">
-                        <div class="meta-item"><strong>Device:</strong> ${campaign.device}</div>
-                        <div class="meta-item"><strong>Traffic Type:</strong> ${campaign.trafficType}</div>
-                        <div class="meta-item"><strong>Ad Unit:</strong> ${campaign.adUnit}</div>
-                        <div class="meta-item"><strong>Pricing:</strong> ${campaign.pricing}</div>
-                        <div class="meta-item"><strong>Countries:</strong> ${campaign.countries}</div>
-                        <div class="meta-item"><strong>Budget:</strong> $${campaign.budget}</div>
-                        <div class="meta-item"><strong>Created:</strong> ${campaign.created}</div>
-                    </div>
-                </div>
-                
-                <!-- Status Column -->
-                <div class="metric-value" data-label="Status">
-                    <span class="status-badge ${campaign.status.toLowerCase()}">${campaign.status}</span>
-                </div>
-                
-                <!-- Impressions Column -->
-                <div class="metric-value" data-label="Impressions">
-                    ${campaign.impressions.toLocaleString()}
-                </div>
-                
-                <!-- Clicks Column -->
-                <div class="metric-value" data-label="Clicks">
-                    ${campaign.clicks.toLocaleString()}
-                </div>
-                
-                <!-- CTR Column -->
-                <div class="metric-value metric-highlight" data-label="CTR (%)">
-                    ${campaign.ctr}%
-                </div>
-                
-                <!-- CPM Column -->
-                <div class="metric-value" data-label="CPM ($)">
-                    $${campaign.cpm}
-                </div>
-                
-                <!-- Spent Column -->
-                <div class="metric-value metric-highlight" data-label="Spent ($)">
-                    $${campaign.spent}
-                </div>
-                
-                <!-- Actions Column -->
-                <div class="campaign-actions" data-label="Actions">
-                    <button class="action-btn edit" onclick="editCampaign('${campaign.id}')">View</button>
-                    <button class="action-btn edit" onclick="editCampaign('${campaign.id}')">Edit</button>
-                    <button class="action-btn delete" onclick="deleteCampaign('${campaign.id}')">Delete</button>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-// Example usage:
-const campaignData = {
-    id: '1',
-    name: 'adshark',
-    device: 'mobile',
-    trafficType: 'mainstream',
-    adUnit: 'native-banner',
-    pricing: 'CPM',
-    countries: 'CA, GB, DE +1 more',
-    budget: '12',
-    created: '07/10/2025',
-    status: 'PENDING',
-    impressions: 0,
-    clicks: 0,
-    ctr: '0.00',
-    cpm: '0.00',
-    spent: '0.00'
-};
-
-// Render campaign cards
-document.getElementById('campaignTableBody').innerHTML = campaigns.map(campaign => 
-    createCampaignCard(campaign)
-).join('');
 function populateCampaignTable(campaigns) {
     const tableBody = document.getElementById('campaignTableBody');
     if (!tableBody) return;
@@ -141,31 +62,88 @@ function populateCampaignTable(campaigns) {
     tableBody.innerHTML = '';
 
     campaigns.forEach(campaign => {
-        const card = document.createElement('div');
-        card.className = 'campaign-card';
-
-        // Format numbers with proper precision
-        const impressions = parseInt(campaign.impressions || 0).toLocaleString();
-        const clicks = parseInt(campaign.clicks || 0).toLocaleString();
-        const ctr = ((campaign.clicks / campaign.impressions) * 100 || 0).toFixed(2);
+        const impressions = parseInt(campaign.impressions || 0);
+        const clicks = parseInt(campaign.clicks || 0);
+        const conversions = parseInt(campaign.conversions || 0);
+        const ctr = impressions > 0 ? ((clicks / impressions) * 100).toFixed(2) : '0.00';
         const cpm = parseFloat(campaign.cpm || 0).toFixed(2);
         const spent = parseFloat(campaign.spent || 0).toFixed(2);
-        const conversions = parseInt(campaign.conversions || 0).toLocaleString();
         const i2c = parseFloat(campaign.i2c || 0).toFixed(3);
 
+        const card = document.createElement('div');
+        card.className = 'campaign-row';
+        
         card.innerHTML = `
-            <span>${campaign.campaign}</span>
-            <span>${impressions}</span>
-            <span>${conversions}</span>
-            <span>${clicks}</span>
-            <span>${ctr}%</span>
-            <span>$${cpm}</span>
-            <span>$${spent}</span>
-            <span>${i2c}</span>
+            <div class="campaign-cell campaign-name-cell">
+                <div class="campaign-title">${campaign.campaign || 'Untitled Campaign'}</div>
+                <div class="campaign-meta">
+                    <span class="meta-badge">${campaign.device || 'N/A'}</span>
+                    <span class="meta-badge">${campaign.trafficType || 'N/A'}</span>
+                    <span class="meta-badge">${campaign.adUnit || 'N/A'}</span>
+                </div>
+            </div>
+            <div class="campaign-cell">
+                <span class="status-badge ${(campaign.status || 'pending').toLowerCase()}">
+                    ${campaign.status || 'PENDING'}
+                </span>
+            </div>
+            <div class="campaign-cell metric-cell">
+                <div class="metric-value">${impressions.toLocaleString()}</div>
+                <div class="metric-label">Impressions</div>
+            </div>
+            <div class="campaign-cell metric-cell">
+                <div class="metric-value">${conversions.toLocaleString()}</div>
+                <div class="metric-label">Conversions</div>
+            </div>
+            <div class="campaign-cell metric-cell">
+                <div class="metric-value">${clicks.toLocaleString()}</div>
+                <div class="metric-label">Clicks</div>
+            </div>
+            <div class="campaign-cell metric-cell">
+                <div class="metric-value metric-highlight">${ctr}%</div>
+                <div class="metric-label">CTR</div>
+            </div>
+            <div class="campaign-cell metric-cell">
+                <div class="metric-value">$${cpm}</div>
+                <div class="metric-label">CPM</div>
+            </div>
+            <div class="campaign-cell metric-cell">
+                <div class="metric-value metric-spent">$${spent}</div>
+                <div class="metric-label">Spent</div>
+            </div>
+            <div class="campaign-cell actions-cell">
+                <button class="action-icon-btn" onclick="viewCampaign('${campaign.id || ''}')" title="View">
+                    <span class="material-icons-sharp">visibility</span>
+                </button>
+                <button class="action-icon-btn" onclick="editCampaign('${campaign.id || ''}')" title="Edit">
+                    <span class="material-icons-sharp">edit</span>
+                </button>
+                <button class="action-icon-btn delete" onclick="deleteCampaign('${campaign.id || ''}')" title="Delete">
+                    <span class="material-icons-sharp">delete</span>
+                </button>
+            </div>
         `;
 
         tableBody.appendChild(card);
     });
+}
+
+// Placeholder functions for actions
+function viewCampaign(id) {
+    console.log('View campaign:', id);
+    Toast.show('Campaign details coming soon!', 'info');
+}
+
+function editCampaign(id) {
+    console.log('Edit campaign:', id);
+    Toast.show('Edit functionality coming soon!', 'info');
+}
+
+function deleteCampaign(id) {
+    if (confirm('Are you sure you want to delete this campaign?')) {
+        console.log('Delete campaign:', id);
+        Toast.show('Delete functionality coming soon!', 'warning');
+    }
 }
 
 // Export functions for use in dashboard.js
