@@ -104,17 +104,30 @@ const isAuthenticated = (req, res, next) => {
   }
 };
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, // Use STARTTLS
   auth: {
     user: 'adshark00@gmail.com',
     pass: 'iasy nmqs bzpa favn',
   },
+  tls: {
+    rejectUnauthorized: false, // Accept self-signed certificates
+    ciphers: 'SSLv3'
+  },
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 30000, // 30 seconds
+  debug: !isProduction, // Enable debug in development
+  logger: !isProduction // Enable logging in development
 });
+
 transporter.verify(function (error, success) {
   if (error) {
-    console.error('Email transporter error:', error);
+    console.error('❌ Email transporter error:', error.message);
+    console.error('⚠️ Email functionality may not work. Check your firewall/network settings.');
   } else {
-    console.log('Email server is ready to send messages');
+    console.log('✅ Email server is ready to send messages');
   }
 });
 // Simplified User Schema (no verification needed)
