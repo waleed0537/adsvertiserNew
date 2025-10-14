@@ -18,8 +18,10 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://adshark00:0KKX2YSB
 const SESSION_SECRET = process.env.SESSION_SECRET || 'your-secret-key';
 const isProduction = process.env.NODE_ENV === 'production';
 const BASE_DOMAIN = isProduction 
-  ? 'https://adsvertiser.com'  // Change to your domain
+  ? 'https://adsvertiser.com'
   : 'http://localhost:3002';
+  console.log('🌐 Base Domain:', BASE_DOMAIN);
+console.log('🔧 Environment:', isProduction ? 'Production' : 'Development');
 // Simple CORS configuration
 app.use(cors({
   origin: function (origin, callback) {
