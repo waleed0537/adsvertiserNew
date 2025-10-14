@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Adsvertiser</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="./toastNotification.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8bbcd4;
+            --primary-dark: #6fa8be;
+            --primary-light: #a8d4e8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --bg-main: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border: #cbd5e1;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.375rem;
+            font-weight: 700;
+        }
+
+        .logo .material-icons-sharp {
+            font-size: 2rem;
+        }
+
+        .menu-close {
+            display: none;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            color: white;
+            transition: background 0.2s;
+        }
+
+        .menu-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-menu {
+            padding: 1.5rem 1rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.5rem;
+            border-radius: 10px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 0;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
+            transition: height 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(139, 188, 212, 0.08);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: rgba(139, 188, 212, 0.15);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item.active::before {
+            height: 70%;
+        }
+
+        .nav-item .material-icons-sharp {
+            font-size: 1.5rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+
+        .top-header {
+            height: 75px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: var(--text-primary);
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .menu-toggle:hover {
+            background: var(--bg-main);
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(139, 188, 212, 0.3);
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 2rem;
+            max-width: 1600px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon.blue { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+        .stat-icon.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .stat-icon.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .stat-icon.teal { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+
+        .stat-icon .material-icons-sharp {
+            font-size: 2rem;
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Search Box */
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg-main);
+            padding: 0.875rem 1.25rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            min-width: 320px;
+            transition: all 0.2s;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 188, 212, 0.1);
+        }
+
+        .search-box .material-icons-sharp {
+            color: var(--text-secondary);
+        }
+
+        .search-box input {
+            border: none;
+            background: none;
+            outline: none;
+            flex: 1;
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        th {
+            padding: 1.125rem 1.25rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 1.125rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+        }
+
+        tbody tr {
+            transition: all 0.2s;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-main);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+
+        /* Status Badge */
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.active { background: #d1fae5; color: #065f46; }
+        .badge.pending { background: #fef3c7; color: #92400e; }
+        .badge.inactive { background: #e5e7eb; color: #374151; }
+        .badge.rejected { background: #fee2e2; color: #991b1b; }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: inherit;
+        }
+
+        .btn-primary { 
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(139, 188, 212, 0.3);
+        }
+        
+        .btn-primary:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 188, 212, 0.4);
+        }
+
+        .btn-danger { 
+            background: var(--danger); 
+            color: white;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-danger:hover { 
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-main);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Select Dropdown */
+        select {
+            padding: 0.5rem 2rem 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+        }
+
+        select:hover {
+            border-color: var(--primary);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 188, 212, 0.1);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 540px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-info {
+            background: var(--bg-main);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .modal-info p {
+            margin-bottom: 0.75rem;
+            font-size: 0.9375rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .modal-info p:last-child {
+            margin-bottom: 0;
+        }
+
+        .modal-info strong {
+            color: var(--text-secondary);
+        }
+.balance-amount {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    margin: 0.5rem 0;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+
+        /* Form */
+        .form-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.875rem 1.25rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-family: inherit;
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 188, 212, 0.1);
+        }
+
+        .radio-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .radio-label {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .radio-label input {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .radio-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1.125rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-card);
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .radio-label:hover .radio-card {
+            border-color: var(--primary);
+            background: rgba(139, 188, 212, 0.05);
+        }
+
+        .radio-label input:checked + .radio-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(139, 188, 212, 0.3);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        /* Quick Actions */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .action-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            gap: 1.5rem;
+            transition: all 0.3s;
+            box-shadow: var(--shadow);
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .action-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(139, 188, 212, 0.3);
+        }
+
+        .action-icon .material-icons-sharp {
+            font-size: 2rem;
+        }
+
+        .action-content {
+            flex: 1;
+        }
+
+        .action-content h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .action-content p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            margin-bottom: 1.25rem;
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+                box-shadow: var(--shadow-lg);
+            }
+
+            .menu-toggle, .menu-close {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content-area {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .stat-value {
+                font-size: 1.875rem;
+            }
+
+            th, td {
+                padding: 0.875rem;
+                font-size: 0.875rem;
+            }
+
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .radio-group {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-actions {
+                flex-direction: column-reverse;
+            }
+
+            .modal-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="material-icons-sharp">admin_panel_settings</span>
+                    Admin Panel
+                </div>
+                <button class="menu-close" id="menuClose">
+                    <span class="material-icons-sharp">close</span>
+                </button>
+            </div>
+            <nav class="nav-menu">
+                <a class="nav-item active" data-tab="dashboard">
+                    <span class="material-icons-sharp">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a class="nav-item" data-tab="users">
+                    <span class="material-icons-sharp">people</span>
+                    <span>Users</span>
+                </a>
+                <a class="nav-item" data-tab="campaigns">
+                    <span class="material-icons-sharp">campaign</span>
+                    <span>Campaigns</span>
+                </a>
+                <a class="nav-item" id="logoutBtn">
+                    <span class="material-icons-sharp">logout</span>
+                    <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <span class="material-icons-sharp">menu</span>
+                    </button>
+                    <h1 class="page-title" id="pageTitle">Dashboard Overview</h1>
+                </div>
+                <div class="user-info">
+                    <span class="material-icons-sharp">admin_panel_settings</span>
+                    <span>Admin</span>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-content active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <span class="material-icons-sharp">people</span>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-label">Total Users</div>
+                                <div class="stat-value" id="totalUsers">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <span class="material-icons-sharp">campaign</span>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-label">Total Campaigns</div>
+                                <div class="stat-value" id="totalCampaigns">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">
+                                <span class="material-icons-sharp">pending</span>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-label">Pending Campaigns</div>
+                                <div class="stat-value" id="pendingCampaigns">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon teal">
+                                <span class="material-icons-sharp">account_balance_wallet</span>
+                            </div>
+                            <div class="stat-info">
+                                <div class="stat-label">Total Balance</div>
+                                <div class="stat-value" id="totalBalance">$0.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Quick Actions</h2>
+                        </div>
+                        <div class="actions-grid">
+                            <div class="action-card">
+                                <div class="action-icon">
+                                    <span class="material-icons-sharp">people</span>
+                                </div>
+                                <div class="action-content">
+                                    <h3>User Management</h3>
+                                    <p>Manage user accounts and balances</p>
+                                    <button class="btn btn-primary btn-sm" onclick="showTab('users')">
+                                        <span class="material-icons-sharp" style="font-size: 1.125rem;">arrow_forward</span>
+                                        View Users
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="action-card">
+                                <div class="action-icon">
+                                    <span class="material-icons-sharp">campaign</span>
+                                </div>
+                                <div class="action-content">
+                                    <h3>Campaign Management</h3>
+                                    <p>Review and manage campaigns</p>
+                                    <button class="btn btn-primary btn-sm" onclick="showTab('campaigns')">
+                                        <span class="material-icons-sharp" style="font-size: 1.125rem;">arrow_forward</span>
+                                        View Campaigns
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Tab -->
+                <div id="users" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">User Management</h2>
+                            <div class="search-box">
+                                <span class="material-icons-sharp">search</span>
+                                <input type="text" id="userSearch" placeholder="Search users...">
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Balance</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                                            <span class="material-icons-sharp" style="font-size: 3rem; display: block; margin-bottom: 1rem; opacity: 0.5;">hourglass_empty</span>
+                                            Loading users...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campaigns Tab -->
+                <div id="campaigns" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Campaign Management</h2>
+                            <div class="search-box">
+                                <span class="material-icons-sharp">search</span>
+                                <input type="text" id="campaignSearch" placeholder="Search campaigns...">
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Campaign Name</th>
+                                        <th>User</th>
+                                        <th>Status</th>
+                                        <th>Budget</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="campaignsTableBody">
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                                            <span class="material-icons-sharp" style="font-size: 3rem; display: block; margin-bottom: 1rem; opacity: 0.5;">hourglass_empty</span>
+                                            Loading campaigns...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Balance Modal -->
+    <div id="balanceModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Update Balance</h2>
+                <button class="modal-close" onclick="closeBalanceModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-info">
+                    <p>
+                        <strong>User:</strong> 
+                        <span id="modalUsername"></span>
+                    </p>
+                    <p>
+                        <strong>Current Balance:</strong> 
+                        <span class="balance-amount">$<span id="modalCurrentBalance">0.00</span></span>
+                    </p>
+                </div>
+                <form id="balanceForm">
+                    <input type="hidden" id="modalUserId">
+                    <div class="form-group">
+                        <label>Action</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="action" value="add" checked>
+                                <div class="radio-card">
+                                    <span class="material-icons-sharp">add_circle</span>
+                                    Add Balance
+                                </div>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="action" value="remove">
+                                <div class="radio-card">
+                                    <span class="material-icons-sharp">remove_circle</span>
+                                    Remove Balance
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount ($)</label>
+                        <input type="number" id="balanceAmount" class="form-control" min="0.01" step="0.01" placeholder="Enter amount" required>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="closeBalanceModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Balance</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="toastNotification.js"></script>
+    <script src="admin.js"></script>
+    <script>
+        // Navigation functionality
+        function showTab(tabName) {
+            // Remove active class from all tabs and nav items
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Add active class to selected tab and nav item
+            const selectedTab = document.getElementById(tabName);
+            const selectedNavItem = document.querySelector(`[data-tab="${tabName}"]`);
+            
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            if (selectedNavItem) {
+                selectedNavItem.classList.add('active');
+            }
+
+            // Update page title
+            const titles = {
+                'dashboard': 'Dashboard Overview',
+                'users': 'User Management',
+                'campaigns': 'Campaign Management'
+            };
+            document.getElementById('pageTitle').textContent = titles[tabName] || 'Admin Panel';
+
+            // Close mobile menu
+            document.getElementById('sidebar').classList.remove('active');
+
+            // Trigger data fetch based on tab
+            if (typeof window.fetchAdminStats === 'function' && tabName === 'dashboard') {
+                window.fetchAdminStats();
+            }
+            if (typeof window.fetchUsers === 'function' && tabName === 'users') {
+                window.fetchUsers();
+            }
+            if (typeof window.fetchCampaigns === 'function' && tabName === 'campaigns') {
+                window.fetchCampaigns();
+            }
+        }
+
+        // Modal functions
+        function openBalanceModal(userId, username, currentBalance) {
+            document.getElementById('modalUserId').value = userId;
+            document.getElementById('modalUsername').textContent = username;
+            document.getElementById('modalCurrentBalance').textContent = parseFloat(currentBalance).toFixed(2);
+            document.getElementById('balanceAmount').value = '';
+            document.querySelector('input[name="action"][value="add"]').checked = true;
+            document.getElementById('balanceModal').classList.add('active');
+        }
+
+        function closeBalanceModal() {
+            document.getElementById('balanceModal').classList.remove('active');
+        }
+
+        // Mobile menu toggle
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('active');
+        });
+
+        document.getElementById('menuClose').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('active');
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menuToggle');
+            
+            if (window.innerWidth <= 1024 && 
+                sidebar.classList.contains('active') && 
+                !sidebar.contains(e.target) && 
+                e.target !== menuToggle && 
+                !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('balanceModal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeBalanceModal();
+            }
+        });
+
+        // Navigation click handlers
+        document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const tab = item.getAttribute('data-tab');
+                showTab(tab);
+            });
+        });
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    const BASE_URL = window.location.hostname === 'localhost' 
+                        ? 'http://localhost:3002'
+                        : 'https://adsvertiser.com';
+                    
+                    const response = await fetch(`${BASE_URL}/logout`, {
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        if (typeof Toast !== 'undefined') {
+                            Toast.show('Logout failed. Please try again.', 'error');
+                        } else {
+                            alert('Logout failed. Please try again.');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    if (typeof Toast !== 'undefined') {
+                        Toast.show('Error logging out', 'error');
+                    } else {
+                        alert('Error logging out');
+                    }
+                }
+            }
+        });
+
+        // Make openBalanceModal available globally
+        window.openBalanceModal = openBalanceModal;
+        window.closeBalanceModal = closeBalanceModal;
+        window.showTab = showTab;
+    </script>
+</body>
+</html>

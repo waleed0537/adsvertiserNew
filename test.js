@@ -81,6 +81,8 @@ mongoose.connect(MONGODB_URI, {
 .then(() => {
   console.log('MongoDB Connected');
   console.log('Database:', mongoose.connection.db.databaseName);
+  // Create admin user after successful connection
+  createAdminUser();
 })
 .catch(err => {
   console.error('MongoDB Connection Error:', err.message);
@@ -101,6 +103,7 @@ const isAuthenticated = (req, res, next) => {
 };
 
 // Simplified User Schema (no verification needed)
+// Add this to the userSchema in test.js (around line 110)
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -123,11 +126,83 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  balance: {
+    type: Number,
+    default: 0.00
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
+
+// Add Admin Authentication Middleware (after isAuthenticated middleware, around line 95)
+const isAdmin = async (req, res, next) => {
+  try {
+    if (!req.session || !req.session.userId) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Authentication required',
+        redirect: '/login'
+      });
+    }
+
+    const user = await User.findById(req.session.userId);
+    
+    if (!user || !user.isAdmin) {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Admin access required',
+        redirect: '/dashboard.html'
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error('Admin middleware error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error' 
+    });
+  }
+};
+
+// Add function to create admin user on server start (before app.listen, around line 850)
+async function createAdminUser() {
+  try {
+    const adminEmail = 'adshark00@gmail.com';
+    const existingAdmin = await User.findOne({ email: adminEmail });
+    
+    if (!existingAdmin) {
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash('admin', saltRounds);
+      
+      const adminUser = new User({
+        username: 'admin',
+        email: adminEmail,
+        password: hashedPassword,
+        isAdmin: true,
+        balance: 0
+      });
+      
+      await adminUser.save();
+      console.log('Admin user created successfully');
+    } else if (!existingAdmin.isAdmin) {
+      existingAdmin.isAdmin = true;
+      await existingAdmin.save();
+      console.log('Admin privileges granted to existing user');
+    } else {
+      console.log('Admin user already exists');
+    }
+  } catch (error) {
+    console.error('Error creating admin user:', error);
+  }
+}
+
 
 // Campaign Schema (unchanged)
 const campaignSchema = new mongoose.Schema({
@@ -522,13 +597,18 @@ app.post('/login', async (req, res) => {
     req.session.userId = user._id;
     req.session.username = user.username;
     req.session.email = user.email;
+    req.session.isAdmin = user.isAdmin || false;
     
     console.log('Login successful for user:', user.email);
+
+    // Redirect admin to admin dashboard
+    const redirectUrl = user.isAdmin ? '/admin.html' : '/dashboard.html';
 
     return res.status(200).json({ 
       success: true, 
       message: 'Login successful',
-      redirectUrl: '/dashboard.html',
+      redirectUrl: redirectUrl,
+      isAdmin: user.isAdmin || false,
       user: {
         username: user.username,
         email: user.email
@@ -544,7 +624,288 @@ app.post('/login', async (req, res) => {
     });
   }
 });
+// Add these admin endpoints before the error handling middleware (around line 750)
 
+// Admin Dashboard Route
+app.get('/admin.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// Check if user is admin
+app.get('/api/admin/check', isAuthenticated, async (req, res) => {
+  try {
+    const user = await User.findById(req.session.userId);
+    
+    res.json({
+      success: true,
+      isAdmin: user ? user.isAdmin : false
+    });
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error checking admin status'
+    });
+  }
+});
+
+// Get all users (Admin only)
+app.get('/api/admin/users', isAdmin, async (req, res) => {
+  try {
+    const users = await User.find({})
+      .select('-password')
+      .sort({ createdAt: -1 });
+    
+    res.json({
+      success: true,
+      data: users
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching users'
+    });
+  }
+});
+
+// Get all campaigns (Admin only)
+app.get('/api/admin/campaigns', isAdmin, async (req, res) => {
+  try {
+    const campaigns = await Campaign.find({})
+      .populate('userId', 'username email')
+      .sort({ createdAt: -1 });
+    
+    res.json({
+      success: true,
+      data: campaigns
+    });
+  } catch (error) {
+    console.error('Error fetching campaigns:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching campaigns'
+    });
+  }
+});
+
+// Update user balance (Admin only)
+app.put('/api/admin/users/:userId/balance', isAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { amount, action } = req.body;
+
+    // Validate amount
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid amount'
+      });
+    }
+
+    // IMPORTANT: Validate userId format
+    if (!userId || !userId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID format'
+      });
+    }
+
+    console.log('Updating balance for user ID:', userId); // Debug log
+    console.log('Admin session userId:', req.session.userId); // Debug log
+
+    // Find the specific user (not the admin)
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Don't allow updating admin's own balance this way
+    if (user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot update admin balance through this endpoint'
+      });
+    }
+
+    console.log('Found user:', user.username, 'Current balance:', user.balance); // Debug log
+
+    // Update balance
+    const amountFloat = parseFloat(amount);
+    if (action === 'add') {
+      user.balance = (user.balance || 0) + amountFloat;
+    } else if (action === 'remove') {
+      user.balance = Math.max(0, (user.balance || 0) - amountFloat);
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid action. Use "add" or "remove"'
+      });
+    }
+
+    await user.save();
+
+    console.log('Updated balance to:', user.balance); // Debug log
+
+    res.json({
+      success: true,
+      message: `Balance ${action === 'add' ? 'added' : 'removed'} successfully`,
+      data: {
+        userId: user._id,
+        username: user.username,
+        email: user.email,
+        newBalance: user.balance
+      }
+    });
+  } catch (error) {
+    console.error('Error updating balance:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating balance',
+      error: error.message
+    });
+  }
+});
+
+// Delete user (Admin only)
+app.delete('/api/admin/users/:userId', isAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Delete user's campaigns first
+    await Campaign.deleteMany({ userId: userId });
+    
+    // Delete user
+    const user = await User.findByIdAndDelete(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'User and associated campaigns deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting user'
+    });
+  }
+});
+
+// Update campaign status (Admin only)
+app.put('/api/admin/campaigns/:campaignId/status', isAdmin, async (req, res) => {
+  try {
+    const { campaignId } = req.params;
+    const { status } = req.body;
+
+    if (!['pending', 'active', 'inactive', 'rejected'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status'
+      });
+    }
+
+    const campaign = await Campaign.findByIdAndUpdate(
+      campaignId,
+      { status },
+      { new: true }
+    );
+
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: 'Campaign not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Campaign status updated successfully',
+      data: campaign
+    });
+  } catch (error) {
+    console.error('Error updating campaign status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating campaign status'
+    });
+  }
+});
+
+// Get admin statistics
+app.get('/api/admin/stats', isAdmin, async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments({ isAdmin: { $ne: true } });
+    const totalCampaigns = await Campaign.countDocuments();
+    const activeCampaigns = await Campaign.countDocuments({ status: 'active' });
+    const pendingCampaigns = await Campaign.countDocuments({ status: 'pending' });
+    
+    // Calculate total balance
+    const users = await User.find({ isAdmin: { $ne: true } }).select('balance');
+    const totalBalance = users.reduce((sum, user) => sum + (user.balance || 0), 0);
+
+    res.json({
+      success: true,
+      data: {
+        totalUsers,
+        totalCampaigns,
+        activeCampaigns,
+        pendingCampaigns,
+        totalBalance: totalBalance.toFixed(2)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching admin stats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching statistics'
+    });
+  }
+});
+// Add this new endpoint in test.js after the session-status endpoint (around line 530)
+
+// Get user balance endpoint
+// Get user balance endpoint
+app.get('/api/user/balance', isAuthenticated, async (req, res) => {
+  try {
+    const user = await User.findById(req.session.userId).select('balance username email');
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    console.log('Fetching balance for user:', user.username, 'Balance:', user.balance);
+
+    res.json({
+      success: true,
+      data: {
+        balance: user.balance || 0,
+        username: user.username,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching user balance:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching balance',
+      error: error.message
+    });
+  }
+});
 // Session debug endpoint
 app.get('/session-debug', (req, res) => {
   res.json({
@@ -927,6 +1288,10 @@ app.post('/send-payment-email', async (req, res) => {
       error: error.message 
     });
   }
+});
+// Admin routes - Add these BEFORE the error handling middleware
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 // Error handling middleware

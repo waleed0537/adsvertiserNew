@@ -79,110 +79,130 @@
 
             <!-- Dashboard Content -->
             <div id="dashboard" class="tab-content">
-                <div class="welcome-container">
-                    <div class="welcome-header">
-                        <h1>Welcome to Adsvertiser!</h1>
-                        <p class="welcome-subtitle">Thanks for joining Adsvertiser, the reputable advertising network
-                            with
-                            the best Partner Care approach. We have multiple popular ad formats and tons of high-quality
-                            traffic from all over the world!</p>
-                    </div>
+                <!-- Replace the welcome-container section in dashboard.html (starting around line 100) -->
+<div class="welcome-container">
+    <div class="welcome-header">
+        <h1>Welcome to Adsvertiser!</h1>
+        <p class="welcome-subtitle">Thanks for joining Adsvertiser, the reputable advertising network
+            with the best Partner Care approach. We have multiple popular ad formats and tons of high-quality
+            traffic from all over the world!</p>
+    </div>
 
-                    <h2 class="section-title">How to start getting traffic</h2>
-
-                    <div class="getting-started-grid">
-                        <div class="start-card">
-                            <h2>Step 1</h2>
-                            <h3>Choose payment method and top up your balance</h3>
-                            <p class="card-description">Some methods allow you to make payments by yourself, others
-                                require a manager's assistance.</p>
-                            <ul class="feature-list">
-                                <li>
-                                    <span class="material-icons-sharp">payment</span>
-                                    Credit/Debit Cards
-                                </li>
-                                <li>
-                                    <span class="material-icons-sharp">account_balance</span>
-                                    PayPal
-                                </li>
-                            </ul>
-                            <button class="action-button primary" onclick="showTab('payment')">
-                                <span class="material-icons-sharp">account_balance_wallet</span>
-                                Choose Payment Method
-                            </button>
-                        </div>
-
-                        <div class="start-card">
-                            <h2>Step 2</h2>
-                            <h3>Create a campaign by yourself or with the help of a manager</h3>
-
-                            <div class="campaign-options">
-                                <div class="option-section">
-                                    <h4>By yourself:</h4>
-                                    <ul class="feature-list">
-                                        <li>
-                                            <span class="material-icons-sharp">check_circle</span>
-                                            Popunder (CPM, CPA)
-                                        </li>
-                                        <li>
-                                            <span class="material-icons-sharp">check_circle</span>
-                                            Native ads (CPM, CPC)
-                                        </li>
-                                        <li>
-                                            <span class="material-icons-sharp">check_circle</span>
-                                            Social Bar (In-Page Push) (CPM, CPC, CPA)
-                                        </li>
-                                    </ul>
-                                </div>
-
-                                <div class="option-section">
-                                    <h4>With help of a manager:</h4>
-                                    <ul class="feature-list">
-                                        <li>
-                                            <span class="material-icons-sharp">check_circle</span>
-                                            Popunder (CPM, CPA)
-                                        </li>
-                                        <li>
-                                            <span class="material-icons-sharp">check_circle</span>
-                                            Banner, Native ads (CPM, CPA, CPC, CPI)
-                                        </li>
-                                        <li>
-                                            <span class="material-icons-sharp">check_circle</span>
-                                            Social Bar (chats, surveys, etc.) (CPM, CPC, CPA)
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <button class="action-button primary" onclick="showTab('newCampaign')">
-                                <span class="material-icons-sharp">add_circle</span>
-                                Create Campaign
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="quick-stats">
-                        <div class="start-card">
-                            <h2>Recent Activity</h2>
-                            <div class="activity-list">
-                                <ul id="activityList">
-                                    <li class="activity-item">
-                                        <span class="material-icons-sharp">notifications</span>
-                                        <div class="activity-content">
-                                            <p>No recent activity</p>
-                                            <span class="activity-time">Start creating campaigns to see your activity
-                                                here</span>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                            <button class="action-button secondary" onclick="showTab('support')">
-                                <span class="material-icons-sharp">support</span>
-                                Get Support
-                            </button>
-                        </div>
-                    </div>
+    <!-- Balance Card -->
+    <div class="balance-section">
+        <div class="balance-card">
+            <div class="balance-icon">
+                <span class="material-icons-sharp">account_balance_wallet</span>
+            </div>
+            <div class="balance-content">
+                <h3>Your Account Balance</h3>
+                <div class="balance-amount" id="userBalance">
+                    <span class="loading-balance">Loading...</span>
                 </div>
+                <p class="balance-subtitle">Available for campaigns</p>
+            </div>
+            <button class="balance-button" onclick="showTab('payment')">
+                <span class="material-icons-sharp">add</span>
+                Add Funds
+            </button>
+        </div>
+    </div>
+
+    <h2 class="section-title">How to start getting traffic</h2>
+
+    <div class="getting-started-grid">
+        <div class="start-card">
+            <h2>Step 1</h2>
+            <h3>Choose payment method and top up your balance</h3>
+            <p class="card-description">Some methods allow you to make payments by yourself, others
+                require a manager's assistance.</p>
+            <ul class="feature-list">
+                <li>
+                    <span class="material-icons-sharp">payment</span>
+                    Credit/Debit Cards
+                </li>
+                <li>
+                    <span class="material-icons-sharp">account_balance</span>
+                    PayPal
+                </li>
+            </ul>
+            <button class="action-button primary" onclick="showTab('payment')">
+                <span class="material-icons-sharp">account_balance_wallet</span>
+                Choose Payment Method
+            </button>
+        </div>
+
+        <div class="start-card">
+            <h2>Step 2</h2>
+            <h3>Create a campaign by yourself or with the help of a manager</h3>
+
+            <div class="campaign-options">
+                <div class="option-section">
+                    <h4>By yourself:</h4>
+                    <ul class="feature-list">
+                        <li>
+                            <span class="material-icons-sharp">check_circle</span>
+                            Popunder (CPM, CPA)
+                        </li>
+                        <li>
+                            <span class="material-icons-sharp">check_circle</span>
+                            Native ads (CPM, CPC)
+                        </li>
+                        <li>
+                            <span class="material-icons-sharp">check_circle</span>
+                            Social Bar (In-Page Push) (CPM, CPC, CPA)
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="option-section">
+                    <h4>With help of a manager:</h4>
+                    <ul class="feature-list">
+                        <li>
+                            <span class="material-icons-sharp">check_circle</span>
+                            Popunder (CPM, CPA)
+                        </li>
+                        <li>
+                            <span class="material-icons-sharp">check_circle</span>
+                            Banner, Native ads (CPM, CPA, CPC, CPI)
+                        </li>
+                        <li>
+                            <span class="material-icons-sharp">check_circle</span>
+                            Social Bar (chats, surveys, etc.) (CPM, CPC, CPA)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <button class="action-button primary" onclick="showTab('newCampaign')">
+                <span class="material-icons-sharp">add_circle</span>
+                Create Campaign
+            </button>
+        </div>
+    </div>
+
+    <div class="quick-stats">
+        <div class="start-card">
+            <h2>Recent Activity</h2>
+            <div class="activity-list">
+                <ul id="activityList">
+                    <li class="activity-item">
+                        <span class="material-icons-sharp">notifications</span>
+                        <div class="activity-content">
+                            <p>No recent activity</p>
+                            <span class="activity-time">Start creating campaigns to see your activity
+                                here</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <button class="action-button secondary" onclick="showTab('support')">
+                <span class="material-icons-sharp">support</span>
+                Get Support
+            </button>
+        </div>
+    </div>
+</div>
             </div>
 
             <!-- Performance Content -->

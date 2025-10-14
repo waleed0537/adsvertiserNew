@@ -28,6 +28,231 @@
     color: #1a202c;
     margin-bottom: 0.5rem;
 }
+/* Add these styles to dashboardwelcome.css */
+
+/* Balance Section */
+.balance-section {
+    margin: 2rem 0 3rem 0;
+}
+
+.balance-card {
+    background: rgb(139, 188, 212);
+    border-radius: 16px;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.balance-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+.balance-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+}
+
+.balance-icon {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.balance-icon .material-icons-sharp {
+    font-size: 2.5rem;
+    color: white;
+}
+
+.balance-content {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.balance-content h3 {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.balance-amount {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    margin: 0.5rem 0;
+    line-height: 1;
+}
+
+.loading-balance {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.balance-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    margin: 0.5rem 0 0 0;
+}
+
+.balance-button {
+    background: white;
+    color: rgb(139, 188, 212);
+    border: none;
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1;
+}
+
+.balance-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    background: #f8f9fa;
+}
+
+.balance-button .material-icons-sharp {
+    font-size: 1.25rem;
+}
+
+/* Responsive Design for Balance Card */
+@media (max-width: 1024px) {
+    .balance-card {
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .balance-icon {
+        width: 70px;
+        height: 70px;
+    }
+
+    .balance-icon .material-icons-sharp {
+        font-size: 2rem;
+    }
+
+    .balance-amount {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .balance-section {
+        margin: 1.5rem 0 2rem 0;
+    }
+
+    .balance-card {
+        padding: 1.5rem;
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+
+    .balance-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .balance-icon .material-icons-sharp {
+        font-size: 1.75rem;
+    }
+
+    .balance-content h3 {
+        font-size: 0.9rem;
+    }
+
+    .balance-amount {
+        font-size: 2.25rem;
+    }
+
+    .balance-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .balance-button {
+        width: 100%;
+        justify-content: center;
+        padding: 0.875rem 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .balance-card {
+        padding: 1.25rem;
+        gap: 1rem;
+    }
+
+    .balance-icon {
+        width: 50px;
+        height: 50px;
+    }
+
+    .balance-icon .material-icons-sharp {
+        font-size: 1.5rem;
+    }
+
+    .balance-content h3 {
+        font-size: 0.85rem;
+    }
+
+    .balance-amount {
+        font-size: 2rem;
+    }
+
+    .balance-subtitle {
+        font-size: 0.8rem;
+    }
+
+    .balance-button {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .balance-button .material-icons-sharp {
+        font-size: 1.1rem;
+    }
+}
 
 .welcome-header .welcome-subtitle {
     font-size: 1.1rem;

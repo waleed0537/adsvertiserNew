@@ -1,31 +1,76 @@
 const BASE_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3002s'
+    ? 'http://localhost:3002'
     : 'https://adsvertiser.com';
 
-document.addEventListener('DOMContentLoaded', function() {
-    const logoutButton = document.getElementById('logoutButton');
-    
-    logoutButton.addEventListener('click', async function() {
-        try {
-            const response = await fetch('/logout', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'same-origin'
-            });
-            
-            if (response.ok) {
+// Function to fetch and display user balance
+// Function to fetch and display user balance
+async function fetchUserBalance() {
+    try {
+        const response = await fetch(`${BASE_URL}/api/user/balance`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                console.log('User not authenticated, redirecting to login...');
                 window.location.href = '/login';
-            } else {
-                Toast.show("Failed to logout. Please try again.");
+                return;
             }
-        } catch (error) {
-            Toast.show("An error occurred during logout. Please try again.");
+            throw new Error('Failed to fetch balance');
         }
-    });
+
+        const result = await response.json();
+        
+        console.log('Balance fetch result:', result);
+        
+        if (result.success && result.data) {
+            // Update balance display
+            const balanceElement = document.getElementById('userBalance');
+            if (balanceElement) {
+                const balance = parseFloat(result.data.balance || 0).toFixed(2);
+                balanceElement.textContent = `$${balance}`;
+                
+                // Optionally animate the balance update
+                balanceElement.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    balanceElement.style.transform = 'scale(1)';
+                }, 200);
+            }
+            
+            console.log('Balance updated:', result.data.balance);
+        }
+    } catch (error) {
+        console.error('Error fetching user balance:', error);
+        // Show $0.00 instead of $100.00 if there's an error
+        const balanceElement = document.getElementById('userBalance');
+        if (balanceElement) {
+            balanceElement.textContent = '$0.00';
+        }
+    }
+}
+document.addEventListener('DOMContentLoaded', function() {
+    fetchUserBalance();
+    
+    // Optionally refresh balance every 30 seconds
+    setInterval(fetchUserBalance, 30000);
 });
 
+// Also fetch balance when returning to dashboard tab
+function showTab(targetId) {
+    // ... your existing showTab code ...
+    
+    // Refresh balance when dashboard is shown
+    if (targetId === 'dashboard') {
+        fetchUserBalance();
+    }
+}
+
+// Make fetchUserBalance available globally so it can be called after payment
+window.fetchUserBalance = fetchUserBalance;
 function setDefaultDates() {
     const endDate = new Date();
     const startDate = new Date();
@@ -133,6 +178,41 @@ async function fetchCampaignData() {
         displayNoCampaigns();
     } finally {
         if (loadingDiv) loadingDiv.style.display = 'none';
+    }
+}
+
+async function fetchUserBalance() {
+    const balanceElement = document.getElementById('userBalance');
+    
+    if (!balanceElement) return;
+
+    try {
+        const response = await fetch(`${BASE_URL}/api/user/balance`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch balance');
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+            const balance = parseFloat(result.data.balance || 100).toFixed(2);
+            balanceElement.innerHTML = `$${balance}`;
+            
+            // Store balance for other uses
+            sessionStorage.setItem('userBalance', balance);
+        } else {
+            balanceElement.innerHTML = '$100.00';
+        }
+    } catch (error) {
+        console.error('Error fetching balance:', error);
+        balanceElement.innerHTML = '$100.00';
     }
 }
 
@@ -387,15 +467,17 @@ function showTab(targetId) {
 
     const dateDiv = document.getElementById('dateDiv');
     if (dateDiv) {
-        // Hide date inputs for campaigns since we don't need them anymore
         const hideDateTabs = ['dashboard', 'newCampaign', 'support', 'traffic', 'campaign'];
         dateDiv.style.display = hideDateTabs.includes(targetId) ? 'none' : 'block';
     }
 
     // Handle tab-specific actions
     switch (targetId) {
+        case 'dashboard':
+            // Fetch balance when dashboard is shown
+            fetchUserBalance();
+            break;
         case 'campaign':
-            // Simply fetch campaigns from database - no date needed
             fetchCampaignData();
             break;
         case 'performance':
@@ -415,6 +497,26 @@ function showTab(targetId) {
             break;
     }
 }
+document.addEventListener('DOMContentLoaded', () => {
+    const links = document.querySelectorAll('.sidebar a');
+
+    links.forEach(link => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            const targetId = link.getAttribute('href').substring(1);
+            showTab(targetId);
+        });
+    });
+
+    // Set up date inputs
+    setDefaultDates();
+
+    // Show dashboard/welcome page by default
+    showTab('dashboard');
+    
+    // Fetch balance on initial load
+    fetchUserBalance();
+});
 
 function handleNewCampaignTab() {
     const selectedCountry = sessionStorage.getItem('selectedCountry');
