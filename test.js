@@ -7,6 +7,8 @@ const MongoStore = require('connect-mongo');
 const axios = require('axios');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -101,9 +103,21 @@ const isAuthenticated = (req, res, next) => {
     });
   }
 };
-
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'adshark00@gmail.com',
+    pass: 'iasy nmqs bzpa favn',
+  },
+});
+transporter.verify(function (error, success) {
+  if (error) {
+    console.error('Email transporter error:', error);
+  } else {
+    console.log('Email server is ready to send messages');
+  }
+});
 // Simplified User Schema (no verification needed)
-// Add this to the userSchema in test.js (around line 110)
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -133,6 +147,14 @@ const userSchema = new mongoose.Schema({
   isAdmin: {
     type: Boolean,
     default: false
+  },
+  resetPasswordToken: {
+    type: String,
+    default: null
+  },
+  resetPasswordExpires: {
+    type: Date,
+    default: null
   },
   createdAt: {
     type: Date,
@@ -1238,6 +1260,352 @@ app.delete('/api/campaigns/:id', isAuthenticated, async (req, res) => {
       success: false,
       message: 'Error deleting campaign',
       error: error.message
+    });
+  }
+});
+app.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  console.log('Password reset requested for:', email);
+
+  try {
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+
+    if (!user) {
+      // Don't reveal if user exists or not for security
+      return res.status(200).json({
+        success: true,
+        message: 'If an account exists with this email, a password reset link has been sent.'
+      });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    
+    // Hash token before saving to database
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
+    // Set token and expiration (1 hour)
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    await user.save();
+
+    // Create reset URL
+    const resetUrl = `${BASE_DOMAIN}/reset-password.html?token=${resetToken}`;
+
+    // Email options
+    const mailOptions = {
+      from: '"Adsvertiser Support" <adshark00@gmail.com>',
+      to: user.email,
+      subject: 'Password Reset Request - Adsvertiser',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              background: linear-gradient(-45deg, #548CA8 0%, #04befe 100%);
+              color: white;
+              padding: 20px;
+              text-align: center;
+              border-radius: 5px 5px 0 0;
+            }
+            .content {
+              background: #f9f9f9;
+              padding: 30px;
+              border-radius: 0 0 5px 5px;
+            }
+            .button {
+              display: inline-block;
+              padding: 12px 30px;
+              background-color: #548CA8;
+              color: white;
+              text-decoration: none;
+              border-radius: 5px;
+              margin: 20px 0;
+            }
+            .footer {
+              margin-top: 20px;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
+              font-size: 12px;
+              color: #666;
+            }
+            .warning {
+              background: #fff3cd;
+              border: 1px solid #ffc107;
+              padding: 15px;
+              border-radius: 5px;
+              margin: 15px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Password Reset Request</h1>
+            </div>
+            <div class="content">
+              <p>Hello ${user.username},</p>
+              
+              <p>We received a request to reset your password for your Adsvertiser account.</p>
+              
+              <p>Click the button below to reset your password:</p>
+              
+              <center>
+                <a href="${resetUrl}" class="button">Reset Password</a>
+              </center>
+              
+              <p>Or copy and paste this link into your browser:</p>
+              <p style="word-break: break-all; color: #548CA8;">${resetUrl}</p>
+              
+              <div class="warning">
+                <strong>⚠️ Security Notice:</strong>
+                <ul>
+                  <li>This link will expire in 1 hour</li>
+                  <li>If you didn't request this reset, please ignore this email</li>
+                  <li>Your password will remain unchanged until you create a new one</li>
+                </ul>
+              </div>
+              
+              <div class="footer">
+                <p>Best regards,<br>Adsvertiser Support Team</p>
+                <p>If you're having trouble with the button above, copy and paste the URL into your web browser.</p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+
+    console.log('Password reset email sent to:', user.email);
+
+    res.status(200).json({
+      success: true,
+      message: 'If an account exists with this email, a password reset link has been sent.'
+    });
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    
+    res.status(500).json({
+      success: false,
+      message: 'Error processing password reset request. Please try again.',
+      error: isProduction ? undefined : error.message
+    });
+  }
+});
+
+// Verify reset token
+app.get('/verify-reset-token', async (req, res) => {
+  const { token } = req.query;
+
+  try {
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: 'Reset token is required'
+      });
+    }
+
+    // Hash the token from URL
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex');
+
+    // Find user with valid token
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password reset token is invalid or has expired'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Token is valid',
+      email: user.email
+    });
+
+  } catch (error) {
+    console.error('Token verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error verifying reset token'
+    });
+  }
+});
+
+// Reset password
+app.post('/reset-password', async (req, res) => {
+  const { token, password, password2 } = req.body;
+
+  console.log('Password reset attempt');
+
+  try {
+    // Validation
+    if (!token || !password || !password2) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required'
+      });
+    }
+
+    if (password !== password2) {
+      return res.status(400).json({
+        success: false,
+        message: 'Passwords do not match'
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters long'
+      });
+    }
+
+    // Hash the token from URL
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex');
+
+    // Find user with valid token
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password reset token is invalid or has expired'
+      });
+    }
+
+    // Hash new password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Update password and clear reset token
+    user.password = hashedPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    console.log('Password reset successful for:', user.email);
+
+    // Send confirmation email
+    const mailOptions = {
+      from: '"Adsvertiser Support" <adshark00@gmail.com>',
+      to: user.email,
+      subject: 'Password Reset Successful - Adsvertiser',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              background: linear-gradient(-45deg, #548CA8 0%, #04befe 100%);
+              color: white;
+              padding: 20px;
+              text-align: center;
+              border-radius: 5px 5px 0 0;
+            }
+            .content {
+              background: #f9f9f9;
+              padding: 30px;
+              border-radius: 0 0 5px 5px;
+            }
+            .success {
+              background: #d4edda;
+              border: 1px solid #28a745;
+              padding: 15px;
+              border-radius: 5px;
+              margin: 15px 0;
+              color: #155724;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>✓ Password Reset Successful</h1>
+            </div>
+            <div class="content">
+              <p>Hello ${user.username},</p>
+              
+              <div class="success">
+                <strong>Your password has been successfully reset!</strong>
+              </div>
+              
+              <p>You can now log in to your Adsvertiser account using your new password.</p>
+              
+              <p>If you did not make this change, please contact our support team immediately.</p>
+              
+              <p>Best regards,<br>Adsvertiser Support Team</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({
+      success: true,
+      message: 'Password has been reset successfully. You can now login with your new password.'
+    });
+
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error resetting password. Please try again.',
+      error: isProduction ? undefined : error.message
     });
   }
 });

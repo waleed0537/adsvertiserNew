@@ -1043,6 +1043,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+document.getElementById('logoutButton').addEventListener('click', async function(e) {
+    e.preventDefault();
+
+    
+    try {
+        const BASE_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3002'
+            : 'https://adsvertiser.com';
+        
+        await fetch(`${BASE_URL}/logout`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        
+        sessionStorage.clear();
+        window.location.href = '/login';
+    } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = '/login';
+    }
+});
+
+
     // Update selected countries display
     function updateSelectedCountries() {
         // Update count
