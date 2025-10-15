@@ -16,7 +16,9 @@ const PORT = process.env.PORT || 3002;
 // Environment variables with fallbacks
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://adshark00:0KKX2YSBGY9Zrz21@cluster0.g7lpz.mongodb.net/adsvertiser?retryWrites=true&w=majority&appName=Cluster0';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'your-secret-key';
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === 'production' || 
+                     process.env.BASE_URL === 'https://adsvertiser.com';
+                     
 const BASE_DOMAIN = isProduction 
   ? 'https://adsvertiser.com'
   : 'http://localhost:3002';
